@@ -1,4 +1,4 @@
-const Suits = ['hearths', 'diamonds', 'clubs', 'spades'];
+const Suits = ['Hearths', 'Diamonds', 'Clubs', 'Spades'];
 
 function initDeck(minRank = 8,
                   maxRank = 14, // Ace = 14, for ease of rank comparisons
@@ -20,7 +20,7 @@ function initDeck(minRank = 8,
 
 function dealCards(G, ctx) {
   // Shuffle the deck
-  ctx.random.Shuffle(G.deck);
+  G.deck = ctx.random.Shuffle(G.deck);
   // Deal the cards to the players
   let playerId = 0;
   for (const card of G.deck) {
@@ -34,4 +34,24 @@ function dealCards(G, ctx) {
   G.deck = []
 }
 
-export { Suits, initDeck, dealCards}
+function rankToString(rank) {
+  switch (rank) {
+    case 8: return 'Eight';
+    case 9: return 'Nine';
+    case 10: return 'Ten';
+    case 11: return 'Jack';
+    case 12: return 'Queen';
+    case 13: return 'King';
+    case 14: return 'Ace';
+    default: return 'Unknown card';
+  }
+}
+
+function cardToString(card) {
+  if (card) {
+    return `${rankToString(card.rank)} of ${card.suit}`;
+  }
+  return '';
+}
+
+export { Suits, initDeck, dealCards, cardToString }
