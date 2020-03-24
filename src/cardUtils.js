@@ -54,4 +54,21 @@ function cardToString(card) {
   return '';
 }
 
-export { Suits, initDeck, dealCards, cardToString }
+function getCardUri(card) {
+  let filename = '';
+  switch (card.rank) {
+    case 8: filename += '8'; break;
+    case 9: filename += '8'; break;
+    case 10: filename += '10'; break;
+    case 11: filename += 'J'; break;
+    case 12: filename += 'Q'; break;
+    case 13: filename += 'K'; break;
+    case 14: filename += 'A'; break;
+    default:  break;
+  }
+  filename += card.suit[0] + '.svg';
+
+  return `https://unpkg.com/cardsJS/dist/cards/${filename}`;
+}
+
+export { Suits, initDeck, dealCards, cardToString, getCardUri }

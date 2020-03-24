@@ -1,8 +1,21 @@
 import React from 'react';
-import { cardToString } from './cardUtils';
+import 'cardsJS/cards.js';
+import { cardToString, getCardUri } from './cardUtils';
+
 
 class PandoerTable extends React.Component {
   render() {
+    let hands = [];
+    for (const player of this.props.G.players) {
+      let hand = [];
+      let cards = [];
+      for (const card of player.cards) {
+        cards.push(<img className='card' alt='' src={getCardUri(card)}/>);
+      }
+      hand.push(<div className="hand hhand-compact active-hand">{cards}</div>);
+      hands.push(hand);
+    }
+
     return (
         <div>
           phase: {this.props.ctx.phase}<br/>
@@ -22,10 +35,10 @@ class PandoerTable extends React.Component {
           Player with highest card on table: {this.props.G.playerWithHighestCardOnTable}<br/><br/>
 
           Trump: {this.props.G.trump}<br/>
-          Table 0: {cardToString(this.props.G.table[0])}<br/>
-          Table 1: {cardToString(this.props.G.table[1])}<br/>
-          Table 2: {cardToString(this.props.G.table[2])}<br/>
-          Table 3: {cardToString(this.props.G.table[3])}
+          {hands[0]}<br/>
+          {hands[1]}<br/>
+          {hands[2]}<br/>
+          {hands[3]}<br/>
         </div>
 
     )
