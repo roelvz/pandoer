@@ -1,5 +1,6 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { initDeck, dealCards, cardToString } from "./cardUtils";
+import { Suits, initDeck, dealCards, cardToString, removeCard, containsRanksForSuit, containsSuitsForRank,
+  removeRanksForSuit, removeSuitsForRank} from "./cardUtils";
 
 // TODO: rondpassen
 
@@ -17,7 +18,7 @@ function isLegalShoutValue(value) {
 
 function isLegalPlay(G, ctx, card) {
   return (
-      // any card can be played if trump has been chosen yet (this card's suit will become trump)
+      // any card can be played if trump has not been chosen yet (this card's suit will become trump)
       G.trump === undefined ||
       // any card can be played if table is empty
       G.table.length === 0 ||
@@ -93,6 +94,135 @@ function getCardScore(trump, card) {
   }
 }
 
+function getAnnouncementScore(cards, ignoreMarriage = false) {
+  let result = 0;
+  let left = cards;
+
+  function check4CardsOfTheSameRank(rank) {
+    return (left = removeSuitsForRank(left, rank, Suits)).length < cards.length;
+  }
+
+  function check5ConsecutiveCards(suit) {
+    return (
+        (left = removeRanksForSuit(left, suit, [8,9,10,11,12])).length < cards.length ? 100 : 0 ||
+        (left = removeRanksForSuit(left, suit, [9,10,11,12,13])).length < cards.length ? 100 : 0  ||
+        (left = removeRanksForSuit(left, suit, [10,11,12,13,14])).length < cards.length ? 100 : 0
+    );
+  }
+
+  function check4ConsecutiveCards(suit) {
+    return (
+        (left = removeRanksForSuit(left, suit, [8,9,10,11])).length < cards.length ? 50 : 0 ||
+        (left = removeRanksForSuit(left, suit, [9,10,11,12])).length < cards.length ? 50 : 0  ||
+        (left = removeRanksForSuit(left, suit, [10,11,12,13])).length < cards.length ? 50 : 0 ||
+        (left = removeRanksForSuit(left, suit, [11,12,13,14])).length < cards.length ? 50 : 0
+    );
+  }
+
+  function check3ConsecutiveCards(suit) {
+    return (
+        (left = removeRanksForSuit(left, suit, [8,9,10])).length < cards.length ? 20 : 0 ||
+        (left = removeRanksForSuit(left, suit, [9,10,11])).length < cards.length ? 20 : 0  ||
+        (left = removeRanksForSuit(left, suit, [10,11,12])).length < cards.length ? 20 : 0 ||
+        (left = removeRanksForSuit(left, suit, [11,12,13])).length < cards.length ? 20 : 0 ||
+        (left = removeRanksForSuit(left, suit, [12,13,14])).length < cards.length ? 20 : 0
+    );
+  }
+
+  if (check4CardsOfTheSameRank(11)) {
+    // 4 Jacks of different suit: 200 points
+    result += 200;
+  } else if (check4CardsOfTheSameRank(14)) {
+    // 4 Aces of different suit: 100 points
+    result += 100;
+  } else if (check4CardsOfTheSameRank(13)) {
+    // 4 Kings of different suit: 100 points
+    result += 100;
+  } else if (check4CardsOfTheSameRank(12)) {
+    // 4 Queens of different suit: 100 points
+    result += 100;
+  } else {
+    // 5 consecutive cards
+    let fifth = check5ConsecutiveCards('Hearts');
+    if (fifth > 0) { result += fifth; }
+    if (result === 0) {
+      fifth = check5ConsecutiveCards('Clubs');
+      if (fifth > 0) { result += fifth; }
+    }
+    if (result === 0) {
+      fifth = check5ConsecutiveCards('Diamonds');
+      if (fifth > 0) { result += fifth; }
+    }
+    if (result === 0) {
+      fifth = check5ConsecutiveCards('Spades');
+      if (fifth > 0) { result += fifth; }
+    }
+
+    // 4 consecutive cards
+    let fourth = 0;
+    if (result === 0) {
+      fourth = check4ConsecutiveCards('Hearts');
+      if (fourth > 0) { result += fourth; }
+    }
+    if (result === 0) {
+      fourth = check4ConsecutiveCards('Clubs');
+      if (fourth > 0) { result += fourth; }
+    }
+    if (result === 0) {
+      fourth = check4ConsecutiveCards('Diamonds');
+      if (fourth > 0) { result += fourth; }
+    }
+    if (result === 0) {
+      fourth = check4ConsecutiveCards('Spades');
+      if (fourth > 0) { result += fourth; }
+    }
+
+    // 3 consecutive cards
+    let third = 0;
+    if (result === 0) {
+      third = check3ConsecutiveCards('Hearts');
+      if (third > 0) { result += third; }
+    }
+    if (result === 0) {
+      third = check3ConsecutiveCards('Clubs');
+      if (third > 0) { result += third; }
+    }
+    if (result === 0) {
+      third = check3ConsecutiveCards('Diamonds');
+      if (third > 0) { result += third; }
+    }
+    if (result === 0) {
+      third = check3ConsecutiveCards('Spades');
+      if (third > 0) { result += third; }
+    }
+  }
+
+  if (result > 0 && left.length > 0) {
+    result += getAnnouncementScore(left, true);
+  }
+
+  function checkMarriage(suit) {
+   if (removeRanksForSuit(cards, suit, [12,13]).length === cards.length - 2) {
+     if (removeRanksForSuit(cards, suit, [12,13,12,13]).length === cards.length - 4) {
+       return 40;
+     } else {
+       return 20;
+     }
+   }
+   return 0;
+  }
+
+  // marriage
+  if (!ignoreMarriage) {
+    result += checkMarriage('Hearts');
+    result += checkMarriage('Diamonds');
+    result += checkMarriage('Clubs');
+    result += checkMarriage('Spades');
+  }
+
+  return result;
+}
+
 const Pandoer = {
   setup: () => ({
     // The overall scoreboard (den boom)
@@ -160,10 +290,19 @@ const Pandoer = {
       first: (G, ctx) => 0,
       // default behaviour: round robin
       next: (G, ctx) => (ctx.playOrderPos + 1) % ctx.numPlayers,
-      playOrder: (G, ctx) => ctx.turn > 0 && ctx.phase === 'shouts' ?
-          // this increases the first player (i.e. the dealer) at the beginning of each shouts phase
-          ctx.playOrder.map(s => ((parseInt(s) + 1) % ctx.numPlayers).toString()) :
-          ctx.playOrder,
+      playOrder: (G, ctx) => {
+        if (ctx.turn > 0) {
+          if (ctx.phase === 'shouts') {
+            return ctx.playOrder.map(s => ((parseInt(s) + 1) % ctx.numPlayers).toString());
+          } else if (G.highestShoutingPlayer !== undefined) {
+            return [G.highestShoutingPlayer,
+              (parseInt(G.highestShoutingPlayer) + 1 % 4).toString(),
+              (parseInt(G.highestShoutingPlayer) + 2 % 4).toString(),
+              (parseInt(G.highestShoutingPlayer) + 3 % 4).toString()];
+          }
+        }
+        return ctx.playOrder;
+      }
     },
   },
 
@@ -202,7 +341,6 @@ const Pandoer = {
       moves: {
         playCard(G, ctx, card) {
           console.log('Playing card: ' + cardToString(card));
-
           if (!isLegalPlay(G, ctx, card)) {
             return INVALID_MOVE;
           }
@@ -213,11 +351,7 @@ const Pandoer = {
           }
 
           // remove card from player's deck
-          let playerCards = G.players[ctx.currentPlayer].cards;
-          playerCards.splice(playerCards.indexOf(card));
-
-          // G.players[ctx.currentPlayer].cards = G.players[ctx.currentPlayer].cards
-          //     .filter(c => c.rank !== card.rank || c.suit !== card.suit);
+          G.players[ctx.currentPlayer].cards = removeCard(G.players[ctx.currentPlayer].cards, card);
 
           // Check if card is new highest card on table
           if (G.highestCardOnTable === undefined || isCard1HigherThanCard2(G, card, G.highestCardOnTable)) {
@@ -255,4 +389,4 @@ const Pandoer = {
   },
 };
 
-export { Pandoer }
+export { getAnnouncementScore, Pandoer }
