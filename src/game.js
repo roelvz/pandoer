@@ -223,6 +223,13 @@ function getAnnouncementScore(cards, ignoreMarriage = false) {
   return result;
 }
 
+function shouldAnnounce(G, ctx) {
+  console.log(G.table.length);
+  console.log(getPlayerTeam(ctx.currentPlayer));
+  console.log(getPlayerTeam(G.attackingTeam));
+  return G.table.length >= 4 && G.table.length <= 7 && getPlayerTeam(ctx.currentPlayer) === G.attackingTeam;
+}
+
 const Pandoer = {
   setup: () => ({
     // The overall scoreboard (den boom)
@@ -364,7 +371,13 @@ const Pandoer = {
         },
 
         announce(G, ctx, cards) {
-          G.players[ctx.currentPlayer].announcement = cards;
+          if (shouldAnnounce(G, ctx)) {
+            G.players[ctx.currentPlayer].announcement = cards;
+            G.players[ctx.currentPlayer].announcementScore = getAnnouncementScore(cards);
+            G.roundScore[getPlayerTeam(ctx.currentPlayer)] += G.players[ctx.currentPlayer].announcementScore;
+          } else {
+            return INVALID_MOVE;
+          }
         },
       },
 
