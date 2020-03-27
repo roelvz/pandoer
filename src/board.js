@@ -51,12 +51,13 @@ class PandoerTable extends React.Component {
           {this.props.G.players[3].name}: {this.props.G.players[3].cards.length} | {this.props.G.players[3].shout || (this.props.G.players[3].passed ? 'pas' : 'niet geroepen')}<br/><br/>
 
           Speler aan zet: {this.props.G.players[this.props.ctx.currentPlayer].name}<br/><br/>
-
           Hoogst roepende speler: {this.props.G.highestShoutingPlayer}<br/><br/>
-
           Hoogste kaart op tafel: {cardToString(this.props.G.highestCardOnTable)}<br/><br/>
-
           Speler met hoogste kaart op tafel: {this.props.G.playerWithHighestCardOnTable}<br/><br/>
+          Aanvallend team: {this.props.G.attackingTeam}<br/><br/>
+
+          # score team 1: {this.props.G.roundScore[0]} ({this.props.G.tricks[0].length} slagen)<br/>
+          # score team 2: {this.props.G.roundScore[1]} ({this.props.G.tricks[1].length} slagen)<br/>
 
           Tafel:
           {table[0]}
