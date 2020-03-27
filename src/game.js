@@ -240,6 +240,8 @@ const Pandoer = {
 
     // The score for 1 round of playing
     roundScore: [0,0],
+    // tricks ('slagen') per team for this round
+    tricks: [[],[]],
     highestShoutingPlayer: undefined,
     attackingTeam: undefined,
     trump: undefined,
@@ -396,6 +398,8 @@ const Pandoer = {
 
         // Clear table
         G.table = [];
+        G.tricks[getPlayerTeam(ctx.currentPlayer)].push(G.table);
+
         return G;
       },
     },
