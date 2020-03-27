@@ -400,16 +400,29 @@ const Pandoer = {
       },
 
       onEnd(G, ctx) {
-        let team = getPlayerTeam(G.playerWithHighestCardOnTable);
+        let winningTeam = getPlayerTeam(G.playerWithHighestCardOnTable);
 
-        // Add the score of all cards on the table to the score of the team
-        for (const card of G.table) {
-          G.roundScore[team] += getCardScore(G.trump, card);
-        }
+        // Add score to winning team
+        G.roundScore[winningTeam] += getCardsScore(G.trump, G.table);
 
         // Clear table
         G.table = [];
-        G.tricks[getPlayerTeam(ctx.currentPlayer)].push(G.table);
+        // Add tricks from table to winning team
+        G.tricks[winningTeam].push(G.table);
+
+        // Clear play info
+        G.attackingTeam = 0;
+        G.trump = undefined;
+        G.highestCardOnTable = undefined;
+        G.playerWithHighestCardOnTable = undefined;
+
+
+        // Clear shouts (does not happen after shout phase because we need this info in the play phase)
+        for (const player of G.players) {
+          player.shout = undefined;
+          player.passed = false;
+        }
+        G.highestShoutingPlayer = undefined;
 
         return G;
       },
