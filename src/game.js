@@ -343,6 +343,10 @@ const Pandoer = {
         // end phase if all players have either shouted or passed
         return G.players.filter(p => p.shout === undefined && !p.passed).length === 0;
       },
+
+      onEnd(G, ctx) {
+        G.attackingTeam = getPlayerTeam(G.highestShoutingPlayer);
+      }
     },
 
     play: {
