@@ -1,6 +1,33 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { getAnnouncementScore } from './game';
+import { getCardScore, getCardsScore, getAnnouncementScore } from './game';
+
+test('card scores', () => {
+  expect(getCardScore('Hearts',{suit: 'Hearts', rank: 11})).toBe(20);
+  expect(getCardScore('Hearts',{suit: 'Hearts', rank: 9})).toBe(14);
+  expect(getCardScore('Hearts',{suit: 'Hearts', rank: 14})).toBe(11);
+  expect(getCardScore('Hearts',{suit: 'Hearts', rank: 8})).toBe(0);
+
+  let cards = [{suit: 'Clubs', rank: 11},
+    {suit: 'Clubs', rank: 9},
+    {suit: 'Clubs', rank: 14},
+    {suit: 'Clubs', rank: 13},
+    {suit: 'Clubs', rank: 12},
+    {suit: 'Clubs', rank: 10},
+    {suit: 'Clubs', rank: 8}];
+  expect(getCardsScore('Clubs', cards)).toBe(60);
+  expect(getCardsScore('Diamonds', cards)).toBe(27);
+
+  cards = [{suit: 'Clubs', rank: 11},{suit: 'Clubs', rank: 11},
+    {suit: 'Clubs', rank: 9},{suit: 'Clubs', rank: 9},
+    {suit: 'Clubs', rank: 14},{suit: 'Clubs', rank: 14},
+    {suit: 'Clubs', rank: 13},{suit: 'Clubs', rank: 13},
+    {suit: 'Clubs', rank: 12},{suit: 'Clubs', rank: 12},
+    {suit: 'Clubs', rank: 10},{suit: 'Clubs', rank: 10},
+    {suit: 'Clubs', rank: 8},{suit: 'Clubs', rank: 8}];
+  expect(getCardsScore('Clubs', cards)).toBe(120);
+  expect(getCardsScore('Diamonds', cards)).toBe(54);
+});
 
 test('announcement scores', () => {
   // 4 Jacks = 200

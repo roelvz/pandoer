@@ -1,6 +1,5 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { Suits, initDeck, dealCards, cardToString, removeCard, containsRanksForSuit, containsSuitsForRank,
-  removeRanksForSuit, removeSuitsForRank} from "./cardUtils";
+import { Suits, initDeck, dealCards, cardToString, removeCard, removeRanksForSuit, removeSuitsForRank} from "./cardUtils";
 
 // TODO: rondpassen
 
@@ -57,24 +56,6 @@ function getCardScore(trump, card) {
   if (trump === card.suit) {
     switch (card.rank) {
       case 8:
-      case 9:
-        return 0;
-      case 10:
-        return 10;
-      case 11:
-        return 1;
-      case 12:
-        return 2;
-      case 13:
-        return 3;
-      case 14:
-        return 11;
-      default:
-        return 0;
-    }
-  } else {
-    switch (card.rank) {
-      case 8:
         return 0;
       case 9:
         return 14;
@@ -91,7 +72,33 @@ function getCardScore(trump, card) {
       default:
         return 0;
     }
+  } else {
+    switch (card.rank) {
+      case 8:
+      case 9:
+        return 0;
+      case 10:
+        return 10;
+      case 11:
+        return 1;
+      case 12:
+        return 2;
+      case 13:
+        return 3;
+      case 14:
+        return 11;
+      default:
+        return 0;
+    }
   }
+}
+
+function getCardsScore(trump, cards) {
+  let result = 0;
+  for (const card of cards) {
+    result += getCardScore(trump, card);
+  }
+  return result;
 }
 
 function getAnnouncementScore(cards, ignoreMarriage = false) {
@@ -410,4 +417,4 @@ const Pandoer = {
   },
 };
 
-export { getAnnouncementScore, Pandoer }
+export { Pandoer, getCardScore, getCardsScore, getAnnouncementScore }
