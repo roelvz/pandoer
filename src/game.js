@@ -1,7 +1,9 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { Suits, initDeck, dealCards, cardToString, removeCard, removeRanksForSuit, removeSuitsForRank} from "./cardUtils";
+import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, removeCard, removeRanksForSuit,
+  removeSuitsForRank} from "./cardUtils";
 
 // TODO: rondpassen
+// TODO: "give up"
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
 const trumpRankOrder = [8,10,12,13,14,9,11];
@@ -101,7 +103,7 @@ function getCardsScore(trump, cards) {
   return result;
 }
 
-function getAnnouncementScore(cards, ignoreMarriage = false) {
+function getAnnouncementScore(cards, trump, ignoreMarriage = false) {
   let result = 0;
   let left = cards;
 
@@ -150,62 +152,62 @@ function getAnnouncementScore(cards, ignoreMarriage = false) {
     result += 100;
   } else {
     // 5 consecutive cards
-    let fifth = check5ConsecutiveCards('Hearts');
+    let fifth = check5ConsecutiveCards(HEARTS);
     if (fifth > 0) { result += fifth; }
     if (result === 0) {
-      fifth = check5ConsecutiveCards('Clubs');
+      fifth = check5ConsecutiveCards(CLUBS);
       if (fifth > 0) { result += fifth; }
     }
     if (result === 0) {
-      fifth = check5ConsecutiveCards('Diamonds');
+      fifth = check5ConsecutiveCards(DIAMONDS);
       if (fifth > 0) { result += fifth; }
     }
     if (result === 0) {
-      fifth = check5ConsecutiveCards('Spades');
+      fifth = check5ConsecutiveCards(SPADES);
       if (fifth > 0) { result += fifth; }
     }
 
     // 4 consecutive cards
     let fourth = 0;
     if (result === 0) {
-      fourth = check4ConsecutiveCards('Hearts');
+      fourth = check4ConsecutiveCards(HEARTS);
       if (fourth > 0) { result += fourth; }
     }
     if (result === 0) {
-      fourth = check4ConsecutiveCards('Clubs');
+      fourth = check4ConsecutiveCards(CLUBS);
       if (fourth > 0) { result += fourth; }
     }
     if (result === 0) {
-      fourth = check4ConsecutiveCards('Diamonds');
+      fourth = check4ConsecutiveCards(DIAMONDS);
       if (fourth > 0) { result += fourth; }
     }
     if (result === 0) {
-      fourth = check4ConsecutiveCards('Spades');
+      fourth = check4ConsecutiveCards(SPADES);
       if (fourth > 0) { result += fourth; }
     }
 
     // 3 consecutive cards
     let third = 0;
     if (result === 0) {
-      third = check3ConsecutiveCards('Hearts');
+      third = check3ConsecutiveCards(HEARTS);
       if (third > 0) { result += third; }
     }
     if (result === 0) {
-      third = check3ConsecutiveCards('Clubs');
+      third = check3ConsecutiveCards(CLUBS);
       if (third > 0) { result += third; }
     }
     if (result === 0) {
-      third = check3ConsecutiveCards('Diamonds');
+      third = check3ConsecutiveCards(DIAMONDS);
       if (third > 0) { result += third; }
     }
     if (result === 0) {
-      third = check3ConsecutiveCards('Spades');
+      third = check3ConsecutiveCards(SPADES);
       if (third > 0) { result += third; }
     }
   }
 
   if (result > 0 && left.length > 0) {
-    result += getAnnouncementScore(left, true);
+    result += getAnnouncementScore(left, trump,true);
   }
 
   function checkMarriage(suit) {
@@ -221,10 +223,7 @@ function getAnnouncementScore(cards, ignoreMarriage = false) {
 
   // marriage
   if (!ignoreMarriage) {
-    result += checkMarriage('Hearts');
-    result += checkMarriage('Diamonds');
-    result += checkMarriage('Clubs');
-    result += checkMarriage('Spades');
+    result += checkMarriage(trump);
   }
 
   return result;
@@ -361,6 +360,10 @@ const Pandoer = {
       moves: {
         playCard(G, ctx, card) {
           console.log('Playing card: ' + cardToString(card));
+          if (shouldAnnounce(G, ctx)) {
+            return INVALID_MOVE;
+          }
+
           if (!isLegalPlay(G, ctx, card)) {
             return INVALID_MOVE;
           }
@@ -386,7 +389,7 @@ const Pandoer = {
         announce(G, ctx, cards) {
           if (shouldAnnounce(G, ctx)) {
             G.players[ctx.currentPlayer].announcement = cards;
-            G.players[ctx.currentPlayer].announcementScore = getAnnouncementScore(cards);
+            G.players[ctx.currentPlayer].announcementScore = getAnnouncementScore(cards, G.trump);
             G.roundScore[getPlayerTeam(ctx.currentPlayer)] += G.players[ctx.currentPlayer].announcementScore;
           } else {
             return INVALID_MOVE;
@@ -423,6 +426,12 @@ const Pandoer = {
           player.passed = false;
         }
         G.highestShoutingPlayer = undefined;
+
+        // TODO: when there are no cards left in the player's hands
+        // 1) update the scoreboard
+        // 2) deal cards
+        // 3) check if game has ended (better make this endIf condition of the game)
+        // 4) reset team scores, reset attacking team
 
         return G;
       },

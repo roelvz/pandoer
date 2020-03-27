@@ -1,4 +1,8 @@
-const Suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
+const HEARTS = 'Hearts';
+const DIAMONDS = 'Diamonds';
+const CLUBS = 'Clubs';
+const SPADES = 'Spades';
+const Suits = [HEARTS, DIAMONDS, CLUBS, SPADES];
 
 function initDeck(minRank = 8,
                   maxRank = 14, // Ace = 14, for ease of rank comparisons
@@ -143,10 +147,10 @@ function cidToCard(cid) {
   let suit = '';
   let rank = undefined;
   switch (cid[1]) {
-    case 'H': suit = 'Hearts'; break;
-    case 'D': suit = 'Diamonds'; break;
-    case 'C': suit = 'Clubs'; break;
-    case 'S': suit = 'Spades'; break;
+    case 'H': suit = HEARTS; break;
+    case 'D': suit = DIAMONDS; break;
+    case 'C': suit = CLUBS; break;
+    case 'S': suit = SPADES; break;
     default: break;
   }
   switch (cid[0]) {
@@ -165,5 +169,5 @@ function cidToCard(cid) {
   }
 }
 
-export { Suits, initDeck, dealCards, cardToString, getCardUri, cidToCard, removeCard, containsCard, containsCards,
-  containsRanksForSuit, containsSuitsForRank, removeSuitsForRank, removeRanksForSuit }
+export { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, getCardUri, cidToCard, removeCard,
+  containsCard, containsCards, containsRanksForSuit, containsSuitsForRank, removeSuitsForRank, removeRanksForSuit }
