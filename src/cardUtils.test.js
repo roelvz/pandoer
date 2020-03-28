@@ -1,6 +1,18 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { removeCard, containsCard, containsCards, containsRanksForSuit, containsSuitsForRank, removeSuitsForRank, removeRanksForSuit } from './cardUtils';
+import {
+  HEARTS,
+  DIAMONDS,
+  CLUBS,
+  SPADES,
+  removeCard,
+  containsCard,
+  containsCards,
+  containsRanksForSuit,
+  containsSuitsForRank,
+  removeSuitsForRank,
+  removeRanksForSuit
+} from './cardUtils';
 
 test('deck contains card', () => {
   let cards = [{suit: HEARTS, rank: 10}, {suit: CLUBS, rank: 9}];

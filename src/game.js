@@ -2,8 +2,11 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, removeCard, removeRanksForSuit,
   removeSuitsForRank} from "./cardUtils";
 
+// TODO: als 2 dezelfde hoogste kaarten, eerste speler die smeet wint!
 // TODO: rondpassen
 // TODO: "give up"
+// TODO: non-random order
+// TODO: validate announcement
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
 const trumpRankOrder = [8,10,12,13,14,9,11];
@@ -28,7 +31,7 @@ function isLegalPlay(G, ctx, card) {
       // non-trump card can only be played if has the same suit as the first card on the table ...
       card.suit === G.table[0].suit ||
       // ... or if the player has no cards of this suit
-      G.players[ctx.currentPlayer].cards.filter(c => c.suit === G.table[0].suit).length === 0
+      G.players[ctx.currentPlayer].hand.filter(c => c.suit === G.table[0].suit).length === 0
   );
 }
 
@@ -230,10 +233,10 @@ function getAnnouncementScore(cards, trump, ignoreMarriage = false) {
 }
 
 function shouldAnnounce(G, ctx) {
-  console.log(G.table.length);
-  console.log(getPlayerTeam(ctx.currentPlayer));
-  console.log(getPlayerTeam(G.attackingTeam));
-  return G.table.length >= 4 && G.table.length <= 7 && getPlayerTeam(ctx.currentPlayer) === G.attackingTeam;
+  const hasAnnounced = G.players[ctx.currentPlayer].hasAnnounced;
+  const isPartOfAttackingTeam = getPlayerTeam(ctx.currentPlayer) === G.attackingTeam;
+  const oneTrickHasBeenPlayed = G.tricks[0].length + G.tricks[1].length === 1;
+  return !hasAnnounced && isPartOfAttackingTeam && oneTrickHasBeenPlayed;
 }
 
 const Pandoer = {
@@ -245,7 +248,8 @@ const Pandoer = {
     table: [],
 
     // The score for 1 round of playing
-    roundScore: [0,0],
+    roundScore: [0, 0],
+    roundShout: 0,
     // tricks ('slagen') per team for this round
     tricks: [[],[]],
     highestShoutingPlayer: undefined,
@@ -257,31 +261,43 @@ const Pandoer = {
     players: [
       {
         name: "Roel",
-        cards: [],
+        hand: [],
         shout: undefined,
         passed: false,
+        hasPlayedCard: false,
+        hasAnnounced: false,
         announcement: [],
+        announcementScore: 0,
       },
       {
         name: "Bart",
-        cards: [],
+        hand: [],
         shout: undefined,
         passed: false,
+        hasPlayedCard: false,
+        hasAnnounced: false,
         announcement: [],
+        announcementScore: 0,
       },
       {
         name: "Sam",
-        cards: [],
+        hand: [],
         shout: undefined,
         passed: false,
+        hasPlayedCard: false,
+        hasAnnounced: false,
         announcement: [],
+        announcementScore: 0,
       },
       {
         name: "Jasper",
-        cards: [],
+        hand: [],
         shout: undefined,
         passed: false,
+        hasPlayedCard: false,
+        hasAnnounced: false,
         announcement: [],
+        announcementScore: 0,
       }
     ],
   }),
@@ -297,7 +313,18 @@ const Pandoer = {
     endIf(G, ctx) {
       // end turn if player has shouted or passed
       let p = G.players[ctx.currentPlayer];
-      return p.shout !== undefined || p.passed;
+      if (ctx.phase === 'shouts') {
+        return p.shout !== undefined || p.passed;
+      } else {
+        if (p.hasPlayedCard) {
+          if (G.table.length < 4) {
+            return true;
+          } else {
+            return { next: G.playerWithHighestCardOnTable };
+          }
+        }
+      }
+      return false;
     },
 
     order: {
@@ -352,11 +379,12 @@ const Pandoer = {
 
       onEnd(G, ctx) {
         G.attackingTeam = getPlayerTeam(G.highestShoutingPlayer);
+        G.roundShout = G.players[G.highestShoutingPlayer].shout;
       }
     },
 
     play: {
-      next: 'shouts',
+      next: 'play', // different play phases will follow each other
       moves: {
         playCard(G, ctx, card) {
           console.log('Playing card: ' + cardToString(card));
@@ -373,8 +401,10 @@ const Pandoer = {
             G.trump = card.suit;
           }
 
+          G.players[ctx.currentPlayer].hasPlayedCard = true;
+
           // remove card from player's deck
-          G.players[ctx.currentPlayer].cards = removeCard(G.players[ctx.currentPlayer].cards, card);
+          G.players[ctx.currentPlayer].hand = removeCard(G.players[ctx.currentPlayer].hand, card);
 
           // Check if card is new highest card on table
           if (G.highestCardOnTable === undefined || isCard1HigherThanCard2(G, card, G.highestCardOnTable)) {
@@ -390,6 +420,7 @@ const Pandoer = {
           if (shouldAnnounce(G, ctx)) {
             G.players[ctx.currentPlayer].announcement = cards;
             G.players[ctx.currentPlayer].announcementScore = getAnnouncementScore(cards, G.trump);
+            G.players[ctx.currentPlayer].hasAnnounced = true;
             G.roundScore[getPlayerTeam(ctx.currentPlayer)] += G.players[ctx.currentPlayer].announcementScore;
           } else {
             return INVALID_MOVE;
@@ -414,19 +445,43 @@ const Pandoer = {
         G.tricks[winningTeam].push(G.table);
 
         // Clear play info
-        G.attackingTeam = 0;
-        G.trump = undefined;
         G.highestCardOnTable = undefined;
         G.playerWithHighestCardOnTable = undefined;
 
-
-        // Clear shouts (does not happen after shout phase because we need this info in the play phase)
         for (const player of G.players) {
+          player.hasPlayedCard = false;
+          // Clear shouts (does not happen after shout phase because we need this info in the play phase)
           player.shout = undefined;
           player.passed = false;
         }
         G.highestShoutingPlayer = undefined;
 
+        // No player has any cards left, it's the end of the round, count score.
+        if (G.players[0].hand.length === 0) {
+
+          const otherTeam = G.attackingTeam === 0 ? 1 : 0;
+          const score = G.roundShout / 50;
+          if (G.roundScore[G.attackingTeam] > G.roundScore[otherTeam]) {
+            // attacking team won
+            G.scoreBoard[G.attackingTeam] -= score;
+          } else {
+            // attacking team lost ('binnen')
+            G.scoreBoard[G.attackingTeam] -= score;
+            G.scoreBoard[otherTeam] += score;
+          }
+          // Cleanup
+          G.trump = undefined;
+          G.attackingTeam = undefined;
+          G.roundScore = [0, 0];
+          G.roundShout = 0;
+          for (const player of G.players) {
+            player.hasAnnounced = false;
+            player.announcement = [];
+            player.announcementScore = 0;
+          }
+
+          ctx.setPhase('shouts');
+        }
         // TODO: when there are no cards left in the player's hands
         // 1) update the scoreboard
         // 2) deal cards

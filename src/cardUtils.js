@@ -3,6 +3,7 @@ const DIAMONDS = 'Diamonds';
 const CLUBS = 'Clubs';
 const SPADES = 'Spades';
 const Suits = [HEARTS, DIAMONDS, CLUBS, SPADES];
+const defaultSuitOrder = [HEARTS, SPADES, DIAMONDS, CLUBS];
 
 function initDeck(minRank = 8,
                   maxRank = 14, // Ace = 14, for ease of rank comparisons
@@ -29,13 +30,58 @@ function dealCards(G, ctx) {
   let playerId = 0;
   for (const card of G.deck) {
     // deal card to player
-    G.players[playerId].cards.push(card);
+    G.players[playerId].hand.push(card);
     playerId++;
     // cycle through players: 0, 1, 2, 3, 0, 1, 2, 3, ...
     playerId %= G.players.length;
   }
+  for (const player of G.players) {
+    player.hand = sortCards(player.hand);
+  }
+
   // Deck is empty now
   G.deck = []
+}
+
+function compareSuits(suit1, suit2, suitOrder) {
+  const order1 = suitOrder.indexOf(suit1);
+  const order2 = suitOrder.indexOf(suit2);
+  if (order1 === order2) {
+    return 0;
+  } else if (order1 > order2) {
+    return 1;
+  } else {
+    return -1;
+  }
+}
+
+function sortCards(cards) {
+  return cards.sort((c1, c2) => {
+    let suitOrder = defaultSuitOrder;
+
+    const noSpades = cards.filter(c => c.suit === SPADES).length === 0;
+    if (noSpades) {
+      suitOrder = [HEARTS, CLUBS, DIAMONDS];
+    } else {
+      const noDiamonds = cards.filter(c => c.suit === DIAMONDS).length === 0;
+      if (noDiamonds) {
+        suitOrder = [SPADES, HEARTS, CLUBS];
+      }
+    }
+
+    const suitComp = compareSuits(c1.suit, c2.suit, suitOrder);
+    if (suitComp === 0) {
+      if (c1.rank === c2.rank) {
+        return 0;
+      } else if (c1.rank < c2.rank) {
+        return 1;
+      } else {
+        return -1;
+      }
+    } else {
+      return suitComp;
+    }
+  });
 }
 
 function containsCard(deck, card) {
