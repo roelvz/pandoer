@@ -311,9 +311,9 @@ const Pandoer = {
             return ctx.playOrder.map(s => ((parseInt(s) + 1) % ctx.numPlayers).toString());
           } else if (G.highestShoutingPlayer !== undefined) {
             return [G.highestShoutingPlayer,
-              (parseInt(G.highestShoutingPlayer) + 1 % 4).toString(),
-              (parseInt(G.highestShoutingPlayer) + 2 % 4).toString(),
-              (parseInt(G.highestShoutingPlayer) + 3 % 4).toString()];
+              ((parseInt(G.highestShoutingPlayer) + 1) % 4).toString(),
+              ((parseInt(G.highestShoutingPlayer) + 2) % 4).toString(),
+              ((parseInt(G.highestShoutingPlayer) + 3) % 4).toString()];
           }
         }
         return ctx.playOrder;
