@@ -5,6 +5,24 @@ import cards from './cards.js';
 let set = false;
 
 class PandoerTable extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      card: '',
+    };
+
+    this.handleChange = this.handleChange.bind(this);
+    this.play = this.play.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({card: event.target.value});
+  }
+
+  play(event) {
+    this.props.moves.playCard(cidToCard(this.state.card));
+  }
+
   render() {
     if (!set) {
       let that = this;
@@ -67,6 +85,7 @@ class PandoerTable extends React.Component {
 
           Troef: {this.props.G.trump}<br/>
           Handen: <br/>
+          <input type="text" value={this.card} onChange={this.handleChange}/><button onClick={this.play}>play</button><br/>
           {hands[0]}<br/>
           {hands[1]}<br/>
           {hands[2]}<br/>
