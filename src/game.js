@@ -10,6 +10,7 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToStri
 // TODO: end the game
 // TODO: laatste slag tonen
 
+
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
 const trumpRankOrder = [10,12,13,14,9,11];
 
@@ -400,6 +401,10 @@ const Pandoer = {
         playCard(G, ctx, card) {
           console.log('Playing card: ' + cardToString(card));
           if (shouldAnnounce(G, ctx)) {
+            return INVALID_MOVE;
+          }
+
+          if (!containsCard(G.players[ctx.currentPlayer].hand, card)) {
             return INVALID_MOVE;
           }
 
