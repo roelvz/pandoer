@@ -2,14 +2,13 @@ import { INVALID_MOVE } from 'boardgame.io/core';
 import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, removeCard, removeRanksForSuit,
   removeSuitsForRank, containsCard, sortCards, areCardsEqual } from "./cardUtils";
 
-// TODO: als 2 dezelfde hoogste kaarten, eerste speler die smeet wint!
+// TODO: deler laten opschuiven
 // TODO: rondpassen
 // TODO: "give up"
 // TODO: non-random order
 // TODO: validate announcement
 // TODO: end the game
 // TODO: laatste slag tonen
-
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
 const trumpRankOrder = [10,12,13,14,9,11];
@@ -247,6 +246,7 @@ const Pandoer = {
     // The score for 1 round of playing
     roundScore: [0, 0],
     roundShout: 0,
+    dealer: 0,
     // tricks ('slagen') per team for this round
     tricks: [[],[]],
     lastTrick: undefined,
@@ -342,17 +342,20 @@ const Pandoer = {
       playOrder: (G, ctx) => {
         if (ctx.turn > 0) {
           if (ctx.phase === 'shouts') {
-            return ctx.playOrder.map(s => ((parseInt(s) + 1) % ctx.numPlayers).toString());
+            return [G.dealer,
+              (G.dealer + 1) % ctx.numPlayers,
+              (G.dealer + 2) % ctx.numPlayers,
+              (G.dealer + 3) % ctx.numPlayers,];
           } else if (G.highestShoutingPlayer !== undefined) {
             return [G.highestShoutingPlayer,
-              ((parseInt(G.highestShoutingPlayer) + 1) % 4).toString(),
-              ((parseInt(G.highestShoutingPlayer) + 2) % 4).toString(),
-              ((parseInt(G.highestShoutingPlayer) + 3) % 4).toString()];
+              ((parseInt(G.highestShoutingPlayer) + 1) % ctx.numPlayers).toString(),
+              ((parseInt(G.highestShoutingPlayer) + 2) % ctx.numPlayers).toString(),
+              ((parseInt(G.highestShoutingPlayer) + 3) % ctx.numPlayers).toString()];
           } else if (G.playerWhoWonPreviousTrick !== undefined) {
             return [G.playerWhoWonPreviousTrick,
-              ((parseInt(G.playerWhoWonPreviousTrick) + 1) % 4).toString(),
-              ((parseInt(G.playerWhoWonPreviousTrick) + 2) % 4).toString(),
-              ((parseInt(G.playerWhoWonPreviousTrick) + 3) % 4).toString()];
+              ((parseInt(G.playerWhoWonPreviousTrick) + 1) % ctx.numPlayers).toString(),
+              ((parseInt(G.playerWhoWonPreviousTrick) + 2) % ctx.numPlayers).toString(),
+              ((parseInt(G.playerWhoWonPreviousTrick) + 3) % ctx.numPlayers).toString()];
           }
         }
         return ctx.playOrder;
@@ -392,6 +395,8 @@ const Pandoer = {
       onEnd(G, ctx) {
         G.attackingTeam = getPlayerTeam(G.highestShoutingPlayer);
         G.roundShout = G.players[G.highestShoutingPlayer].shout;
+        G.dealer++;
+        G.dealer %= ctx.numPlayers;
       }
     },
 
@@ -557,4 +562,4 @@ const Pandoer = {
   },
 };
 
-export { Pandoer, getCardScore, getCardsScore, getAnnouncementScore, shouldAnnounce }
+export { Pandoer, getCardScore, getCardsScore, getAnnouncementScore, shouldAnnounce, isLegalPlay }
