@@ -3,7 +3,9 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, removeCard
   removeSuitsForRank, containsCard, sortCards, areCardsEqual } from "./cardUtils";
 import {PlayerView} from "boardgame.io/dist/esm/core";
 
+// TODO: bug: aantal slagen na ronde 1 staat op 1
 // TODO: bug: toon in tweede ronde is nu direct
+// TODO: toon van andere accepteren (na x seconden)
 // TODO: rondpassen
 // TODO: "give up"
 // TODO: non-random order
@@ -549,7 +551,7 @@ const Pandoer = {
         if (G.players[0].hand.length === 0) {
 
           const otherTeam = G.attackingTeam === 0 ? 1 : 0;
-          const score = G.roundShout / 50;
+          const score = ~~(G.roundShout / 50);
           if (G.roundScore[G.attackingTeam] > G.roundScore[otherTeam]) {
             // attacking team won
             G.scoreBoard[G.attackingTeam] -= score;
