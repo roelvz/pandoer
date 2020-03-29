@@ -1,6 +1,8 @@
 import React from 'react';
-import { cardToString, getCardUri, cidToCard, cardsToCid } from './cardUtils';
+import { cardToString, cidToCard, cardToCid, cardsToCid } from './cardUtils';
+import { shouldAnnounce } from './game';
 import Hand from "./PlayingCard/Hand/Hand";
+import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 
 class PandoerTable extends React.Component {
   constructor(props) {
@@ -14,6 +16,7 @@ class PandoerTable extends React.Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.play = this.play.bind(this);
+    this.removeCard = this.removeCard.bind(this);
   }
 
   getCardSize(cards) {
@@ -29,9 +32,16 @@ class PandoerTable extends React.Component {
   }
 
   play(key) {
-    console.log('clicked on card: ' + key);
-    console.log('card: ' + cardToString(cidToCard(key)));
-    this.props.moves.playCard(cidToCard(key));
+    console.log('clicked on card in hand: ' + key);
+    if (shouldAnnounce(this.props.G, this.props.ctx)) {
+      this.props.moves.addCardToAnnouncement(cidToCard(key));
+    } else {
+      this.props.moves.playCard(cidToCard(key));
+    }
+  }
+
+  removeCard(key) {
+    this.props.moves.removeCardFromAnnouncement(cidToCard(key));
   }
 
   render() {
@@ -44,8 +54,17 @@ class PandoerTable extends React.Component {
       top: "50%"
     };
 
+    function showLastPlayedCard(that, card) {
+      if (card !== undefined) {
+        return <PlayingCard card={cardToCid(card)} height={100} onClick={that.play}/>
+      }
+    }
+
     return (
         <div>
+          Team 1: {this.props.G.scoreBoard[0]}<br/>
+          Team 1: {this.props.G.scoreBoard[1]}<br/><br/>
+
           fase: {this.props.ctx.phase === 'shouts' ? 'roepen' : 'spelen'}<br/>
           beurt: {this.props.ctx.turn}<br/><br/>
 
@@ -57,7 +76,8 @@ class PandoerTable extends React.Component {
           Speler aan zet: {this.props.G.players[this.props.ctx.currentPlayer].name}<br/>
           Hoogst roepende speler: {this.props.G.highestShoutingPlayer !== undefined ? this.props.G.players[this.props.G.highestShoutingPlayer].name : ''}<br/><br/>
           Hoogste kaart op tafel: {cardToString(this.props.G.highestCardOnTable)}<br/>
-          Speler met hoogste kaart op tafel: {this.props.G.playerWithHighestCardOnTable}<br/><br/>
+          Speler met hoogste kaart op tafel: {this.props.G.playerWithHighestCardOnTable}<br/>
+          Speler die vorige slag won: {this.props.playerWhoWonPreviousTrick}<br/><br/>
           Aanvallend team: {this.props.G.attackingTeam}<br/><br/>
 
           # score team 1: {this.props.G.roundScore[0]} ({this.props.G.tricks[0].length} slagen)<br/>
@@ -71,10 +91,16 @@ class PandoerTable extends React.Component {
           Troef: {this.props.G.trump}<br/>
           Handen: <br/>
           <div style={handStyle}>
-            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[0].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[0].hand))}/>
-            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[1].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[1].hand))}/>
-            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[2].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[2].hand))}/>
-            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[3].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[3].hand))}/>
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[0].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[0].hand))}/>{showLastPlayedCard(this, this.props.G.players[0].lastPlayedCard)}
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[1].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[1].hand))}/>{showLastPlayedCard(this, this.props.G.players[1].lastPlayedCard)}
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[2].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[2].hand))}/>{showLastPlayedCard(this, this.props.G.players[2].lastPlayedCard)}
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[3].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[3].hand))}/>{showLastPlayedCard(this, this.props.G.players[3].lastPlayedCard)}
+          </div>
+
+          Toon:
+          <div style={handStyle}>
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[this.props.ctx.currentPlayer].announcement)} cardSize={this.getCardSize(cardsToCid(this.props.G.players[this.props.ctx.currentPlayer].announcement))} onClick={this.removeCard}/>
+            Score: {this.props.G.players[this.props.ctx.currentPlayer].announcementScore}
           </div>
 
           Gemel:

@@ -55,6 +55,10 @@ function compareSuits(suit1, suit2, suitOrder) {
   }
 }
 
+function areCardsEqual(card1, card2) {
+  return card1.suit === card2.suit && card1.rank === card2.rank;
+}
+
 function sortCards(cards) {
   return cards.sort((c1, c2) => {
     let suitOrder = defaultSuitOrder;
@@ -172,23 +176,6 @@ function cardToString(card) {
   return '';
 }
 
-function getCardUri(card) {
-  let filename = '';
-  switch (card.rank) {
-    case 8: filename += '8'; break;
-    case 9: filename += '9'; break;
-    case 10: filename += '10'; break;
-    case 11: filename += 'J'; break;
-    case 12: filename += 'Q'; break;
-    case 13: filename += 'K'; break;
-    case 14: filename += 'A'; break;
-    default: break;
-  }
-  filename += card.suit[0] + '.svg';
-
-  return `https://unpkg.com/cardsJS/dist/cards/${filename}`;
-}
-
 function cardToCid(card) {
   let cid = '';
   switch (card.rank) {
@@ -241,6 +228,6 @@ function cidToCard(cid) {
   return { suit, rank };
 }
 
-export { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, getCardUri, cidToCard, removeCard,
+export { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, cidToCard, removeCard,
   containsCard, containsCards, containsRanksForSuit, containsSuitsForRank, removeSuitsForRank, removeRanksForSuit,
-  cardToCid, cardsToCid}
+  cardToCid, cardsToCid, sortCards, areCardsEqual }
