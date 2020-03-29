@@ -1,13 +1,13 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, removeCard, removeRanksForSuit,
   removeSuitsForRank, containsCard, sortCards, areCardsEqual } from "./cardUtils";
+import {PlayerView} from "boardgame.io/dist/esm/core";
 
-// TODO: deler laten opschuiven
+// TODO: bug: toon in tweede ronde is nu direct
 // TODO: rondpassen
 // TODO: "give up"
 // TODO: non-random order
-// TODO: validate announcement
-// TODO: end the game
+// TODO: validate announcement (niet teveel laten zien)
 // TODO: laatste slag tonen
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
@@ -229,10 +229,14 @@ function getAnnouncementScore(cards, trump, ignoreMarriage = false) {
 }
 
 function shouldAnnounce(G, ctx) {
-  const hasAnnounced = G.players[ctx.currentPlayer].hasAnnounced;
+  const hasAnnounced = G.playersKnownInfo[ctx.currentPlayer].hasAnnounced;
   const isPartOfAttackingTeam = getPlayerTeam(ctx.currentPlayer) === G.attackingTeam;
   const oneTrickHasBeenPlayed = G.tricks[0].length + G.tricks[1].length === 1;
   return !hasAnnounced && isPartOfAttackingTeam && oneTrickHasBeenPlayed;
+}
+
+function getPlayerId(G, ctx) {
+  return Object.keys(G.players)[0];
 }
 
 const Pandoer = {
@@ -257,10 +261,23 @@ const Pandoer = {
     playerWithHighestCardOnTable: undefined,
     playerWhoWonPreviousTrick: undefined,
 
-    players: [
-      {
-        name: "Roel",
+    players: {
+      '0': {
         hand: [],
+      },
+      '1': {
+        hand: [],
+      },
+      '2': {
+        hand: [],
+      },
+      '3': {
+        hand: [],
+      },
+    },
+    playersKnownInfo: {
+      '0': {
+        name: "Player1",
         shout: undefined,
         passed: false,
         hasPlayedCard: false,
@@ -270,9 +287,8 @@ const Pandoer = {
         announcement: [],
         announcementScore: 0,
       },
-      {
-        name: "Bart",
-        hand: [],
+      '1': {
+        name: "Player2",
         shout: undefined,
         passed: false,
         hasPlayedCard: false,
@@ -282,9 +298,8 @@ const Pandoer = {
         announcement: [],
         announcementScore: 0,
       },
-      {
-        name: "Sam",
-        hand: [],
+      '2': {
+        name: "Player3",
         shout: undefined,
         passed: false,
         hasPlayedCard: false,
@@ -294,9 +309,8 @@ const Pandoer = {
         announcement: [],
         announcementScore: 0,
       },
-      {
-        name: "Jasper",
-        hand: [],
+      '3': {
+        name: "Player4",
         shout: undefined,
         passed: false,
         hasPlayedCard: false,
@@ -305,9 +319,11 @@ const Pandoer = {
         hasAnnounced: false,
         announcement: [],
         announcementScore: 0,
-      }
-    ],
+      },
+    }
   }),
+
+  playerView: PlayerView.STRIP_SECRETS,
 
   endIf(G, ctx) {
     return G.scoreBoard[0] <= 0 || G.scoreBoard[1] <= 0;
@@ -323,7 +339,7 @@ const Pandoer = {
 
     endIf(G, ctx) {
       // end turn if player has shouted or passed
-      let p = G.players[ctx.currentPlayer];
+      let p = G.playersKnownInfo[ctx.currentPlayer];
       if (ctx.phase === 'shouts') {
         return p.shout !== undefined || p.passed;
       } else {
@@ -374,10 +390,10 @@ const Pandoer = {
       moves: {
         shout(G, ctx, value) {
           if (isLegalShoutValue(value) &&
-              (G.highestShoutingPlayer === undefined || value > G.players[G.highestShoutingPlayer].shout)) {
+              (G.highestShoutingPlayer === undefined || value > G.playersKnownInfo[G.highestShoutingPlayer].shout)) {
             // player has shouted the highest so far
             G.highestShoutingPlayer = ctx.currentPlayer;
-            G.players[ctx.currentPlayer].shout = value;
+            G.playersKnownInfo[ctx.currentPlayer].shout = value;
           } else {
             // player mad an illegal shout
             return INVALID_MOVE;
@@ -386,19 +402,21 @@ const Pandoer = {
 
         pass(G, ctx) {
           // clear player's shout and pass turn
-          G.players[ctx.currentPlayer].passed = true;
-          G.players[ctx.currentPlayer].shout = undefined;
+          G.playersKnownInfo[ctx.currentPlayer].passed = true;
+          G.playersKnownInfo[ctx.currentPlayer].shout = undefined;
         },
       },
 
       endIf(G, ctx) {
         // end phase if all players have either shouted or passed
-        return G.players.filter(p => p.shout === undefined && !p.passed).length === 0;
+        return Object.keys(G.playersKnownInfo).filter(key => {
+          return G.playersKnownInfo[key].shout === undefined && !G.playersKnownInfo[key].passed
+        }).length === 0;
       },
 
       onEnd(G, ctx) {
         G.attackingTeam = getPlayerTeam(G.highestShoutingPlayer);
-        G.roundShout = G.players[G.highestShoutingPlayer].shout;
+        G.roundShout = G.playersKnownInfo[G.highestShoutingPlayer].shout;
         G.dealer++;
         G.dealer %= ctx.numPlayers;
       }
@@ -425,11 +443,11 @@ const Pandoer = {
             G.trump = card.suit;
           }
 
-          G.players[ctx.currentPlayer].hasPlayedCard = true;
+          G.playersKnownInfo[ctx.currentPlayer].hasPlayedCard = true;
 
           // remove card from player's deck
           G.players[ctx.currentPlayer].hand = removeCard(G.players[ctx.currentPlayer].hand, card);
-          G.players[ctx.currentPlayer].lastPlayedCard = card;
+          G.playersKnownInfo[ctx.currentPlayer].lastPlayedCard = card;
 
           // Check if card is new highest card on table
           if (G.highestCardOnTable === undefined || isCard1HigherThanCard2(G, card, G.highestCardOnTable)) {
@@ -444,13 +462,13 @@ const Pandoer = {
         addCardToAnnouncement(G, ctx, card) {
           if (shouldAnnounce(G, ctx)) {
             if (containsCard(G.players[ctx.currentPlayer].hand, card)) {
-              G.players[ctx.currentPlayer].announcement.push(card);
-              G.players[ctx.currentPlayer].announcementScore = getAnnouncementScore(G.players[ctx.currentPlayer].announcement, G.trump);
+              G.playersKnownInfo[ctx.currentPlayer].announcement.push(card);
+              G.playersKnownInfo[ctx.currentPlayer].announcementScore = getAnnouncementScore(G.playersKnownInfo[ctx.currentPlayer].announcement, G.trump);
               G.players[ctx.currentPlayer].hand = removeCard(G.players[ctx.currentPlayer].hand, card);
-            } else if (!G.players[ctx.currentPlayer].lastPlayedCardInAnnouncement && areCardsEqual(G.players[ctx.currentPlayer].lastPlayedCard, card)) {
-              G.players[ctx.currentPlayer].announcement.push(card);
-              G.players[ctx.currentPlayer].announcementScore = getAnnouncementScore(G.players[ctx.currentPlayer].announcement, G.trump);
-              G.players[ctx.currentPlayer].lastPlayedCardInAnnouncement = true;
+            } else if (!G.playersKnownInfo[ctx.currentPlayer].lastPlayedCardInAnnouncement && areCardsEqual(G.playersKnownInfo[ctx.currentPlayer].lastPlayedCard, card)) {
+              G.playersKnownInfo[ctx.currentPlayer].announcement.push(card);
+              G.playersKnownInfo[ctx.currentPlayer].announcementScore = getAnnouncementScore(G.playersKnownInfo[ctx.currentPlayer].announcement, G.trump);
+              G.playersKnownInfo[ctx.currentPlayer].lastPlayedCardInAnnouncement = true;
             } else {
               return INVALID_MOVE;
             }
@@ -461,11 +479,11 @@ const Pandoer = {
 
         removeCardFromAnnouncement(G, ctx, card) {
           if (shouldAnnounce(G, ctx)) {
-            G.players[ctx.currentPlayer].announcement = removeCard(G.players[ctx.currentPlayer].announcement, card);
-            G.players[ctx.currentPlayer].announcementScore = getAnnouncementScore(G.players[ctx.currentPlayer].announcement, G.trump);
+            G.playersKnownInfo[ctx.currentPlayer].announcement = removeCard(G.playersKnownInfo[ctx.currentPlayer].announcement, card);
+            G.playersKnownInfo[ctx.currentPlayer].announcementScore = getAnnouncementScore(G.playersKnownInfo[ctx.currentPlayer].announcement, G.trump);
 
-            if (G.players[ctx.currentPlayer].lastPlayedCardInAnnouncement && areCardsEqual(G.players[ctx.currentPlayer].lastPlayedCard, card)) {
-              G.players[ctx.currentPlayer].lastPlayedCardInAnnouncement = false;
+            if (G.playersKnownInfo[ctx.currentPlayer].lastPlayedCardInAnnouncement && areCardsEqual(G.playersKnownInfo[ctx.currentPlayer].lastPlayedCard, card)) {
+              G.playersKnownInfo[ctx.currentPlayer].lastPlayedCardInAnnouncement = false;
             } else {
               G.players[ctx.currentPlayer].hand.push(card);
             }
@@ -477,11 +495,11 @@ const Pandoer = {
 
         announce(G, ctx) {
           if (shouldAnnounce(G, ctx)) {
-            G.players[ctx.currentPlayer].hasAnnounced = true;
-            G.roundScore[getPlayerTeam(ctx.currentPlayer)] += G.players[ctx.currentPlayer].announcementScore;
-            for (const card of G.players[ctx.currentPlayer].announcement) {
-              if (G.players[ctx.currentPlayer].lastPlayedCardInAnnouncement && areCardsEqual(card, G.players[ctx.currentPlayer].lastPlayedCard)) {
-                G.players[ctx.currentPlayer].lastPlayedCardInAnnouncement = false;
+            G.playersKnownInfo[ctx.currentPlayer].hasAnnounced = true;
+            G.roundScore[getPlayerTeam(ctx.currentPlayer)] += G.playersKnownInfo[ctx.currentPlayer].announcementScore;
+            for (const card of G.playersKnownInfo[ctx.currentPlayer].announcement) {
+              if (G.playersKnownInfo[ctx.currentPlayer].lastPlayedCardInAnnouncement && areCardsEqual(card, G.playersKnownInfo[ctx.currentPlayer].lastPlayedCard)) {
+                G.playersKnownInfo[ctx.currentPlayer].lastPlayedCardInAnnouncement = false;
               } else {
                 G.players[ctx.currentPlayer].hand.push(card);
               }
@@ -519,11 +537,11 @@ const Pandoer = {
         G.playerWhoWonPreviousTrick = G.playerWithHighestCardOnTable;
         G.playerWithHighestCardOnTable = undefined;
 
-        for (const player of G.players) {
-          player.hasPlayedCard = false;
+        for (const key of Object.keys(G.playersKnownInfo)) {
+          G.playersKnownInfo[key].hasPlayedCard = false;
           // Clear shouts (does not happen after shout phase because we need this info in the play phase)
-          player.shout = undefined;
-          player.passed = false;
+          G.playersKnownInfo[key].shout = undefined;
+          G.playersKnownInfo[key].passed = false;
         }
         G.highestShoutingPlayer = undefined;
 
@@ -548,12 +566,12 @@ const Pandoer = {
           G.playerWhoWonPreviousTrick = undefined;
           G.tricks[0] = [];
           G.tricks[1] = [];
-          for (const player of G.players) {
-            player.hasAnnounced = false;
-            player.announcement = [];
-            player.announcementScore = 0;
-            player.lastPlayedCard = undefined;
-            player.lastPlayedCardInAnnouncement = false;
+          for (const key of Object.keys(G.playersKnownInfo)) {
+            G.playersKnownInfo[key].hasAnnounced = false;
+            G.playersKnownInfo[key].announcement = [];
+            G.playersKnownInfo[key].announcementScore = 0;
+            G.playersKnownInfo[key].lastPlayedCard = undefined;
+            G.playersKnownInfo[key].lastPlayedCardInAnnouncement = false;
           }
 
           // initiate deck again so that it can be dealt the beginning of the next turn
@@ -567,4 +585,4 @@ const Pandoer = {
   },
 };
 
-export { Pandoer, getCardScore, getCardsScore, getAnnouncementScore, shouldAnnounce, isLegalPlay }
+export { Pandoer, getCardScore, getCardsScore, getAnnouncementScore, shouldAnnounce, isLegalPlay, getPlayerId }
