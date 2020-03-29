@@ -309,6 +309,10 @@ const Pandoer = {
     ],
   }),
 
+  endIf(G, ctx) {
+    return G.scoreBoard[0] <= 0 || G.scoreBoard[1] <= 0;
+  },
+
   turn: {
     onBegin: (G, ctx) => {
       // Deal cards to player if deck is not empty
