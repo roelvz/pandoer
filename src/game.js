@@ -7,6 +7,7 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToStri
 // TODO: "give up"
 // TODO: non-random order
 // TODO: validate announcement
+// TODO: end the game
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
 const trumpRankOrder = [8,10,12,13,14,9,11];
@@ -480,13 +481,10 @@ const Pandoer = {
             player.announcementScore = 0;
           }
 
+          // initiate deck again so that it can be dealt the beginning of the next turn
+          G.deck = initDeck();
           ctx.setPhase('shouts');
         }
-        // TODO: when there are no cards left in the player's hands
-        // 1) update the scoreboard
-        // 2) deal cards
-        // 3) check if game has ended (better make this endIf condition of the game)
-        // 4) reset team scores, reset attacking team
 
         return G;
       },

@@ -189,31 +189,58 @@ function getCardUri(card) {
   return `https://unpkg.com/cardsJS/dist/cards/${filename}`;
 }
 
+function cardToCid(card) {
+  let cid = '';
+  switch (card.rank) {
+    case 14: cid += '1'; break;
+    case 13: cid += 'k'; break;
+    case 12: cid += 'q'; break;
+    case 11: cid += 'j'; break;
+    default: cid += card.rank; break;
+  }
+  switch (card.suit) {
+    case HEARTS: cid += 'h'; break;
+    case CLUBS: cid += 'c'; break;
+    case DIAMONDS: cid += 'd'; break;
+    case SPADES: cid += 's'; break;
+    default: break;
+  }
+  return cid;
+}
+
+function cardsToCid(cards) {
+  return cards.map(card => cardToCid(card));
+}
+
 function cidToCard(cid) {
   let suit = '';
   let rank = undefined;
-  switch (cid[1]) {
-    case 'H': suit = HEARTS; break;
-    case 'D': suit = DIAMONDS; break;
-    case 'C': suit = CLUBS; break;
-    case 'S': suit = SPADES; break;
+
+  if (cid.length === 3) {
+    // 10 is a special case
+    rank = 10;
+  } else {
+    switch (cid[0]) {
+      case 'j': rank = 11; break;
+      case 'q': rank = 12; break;
+      case 'k': rank = 13; break;
+      case '1': rank = 14; break;
+      default: rank = parseInt(cid[0]); break;
+    }
+  }
+
+  const switchCid = cid.length === 3 ? cid[2] : cid[1];
+  switch (switchCid) {
+    case 'h': suit = HEARTS; break;
+    case 'd': suit = DIAMONDS; break;
+    case 'c': suit = CLUBS; break;
+    case 's': suit = SPADES; break;
     default: break;
   }
-  switch (cid[0]) {
-    case '8': rank = 8; break;
-    case '9': rank = 9; break;
-    case '0': rank = 10; break;
-    case 'J': rank = 11; break;
-    case 'Q': rank = 12; break;
-    case 'K': rank = 13; break;
-    case 'A': rank = 14; break;
-    default: break;
-  }
-  return {
-    suit: suit,
-    rank: rank,
-  }
+
+  return { suit, rank };
 }
 
 export { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, getCardUri, cidToCard, removeCard,
-  containsCard, containsCards, containsRanksForSuit, containsSuitsForRank, removeSuitsForRank, removeRanksForSuit }
+  containsCard, containsCards, containsRanksForSuit, containsSuitsForRank, removeSuitsForRank, removeRanksForSuit,
+  cardToCid, cardsToCid}

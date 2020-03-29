@@ -1,62 +1,48 @@
 import React from 'react';
-import { cardToString, getCardUri, cidToCard } from './cardUtils';
-import cards from './cards.js';
-
-let set = false;
+import { cardToString, getCardUri, cidToCard, cardsToCid } from './cardUtils';
+import Hand from "./PlayingCard/Hand/Hand";
 
 class PandoerTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       card: '',
+      hand: ["1d", "1c", "1s", "1s", "1h"],
+      layout: "spread",
+      handSize: "4",
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.play = this.play.bind(this);
   }
 
+  getCardSize(cards) {
+    // console.log("window: ", window.innerWidth);
+    // console.log('handsize', this.state.hand.length);
+    // console.log("size: ", window.innerWidth / this.state.hand.length);
+    let cardSize = window.innerWidth / cards.length;
+    return this.state.layout !== "spread" || cardSize > 100 ? 100 : cardSize;
+  }
+
   handleChange(event) {
     this.setState({card: event.target.value});
   }
 
-  play(event) {
-    this.props.moves.playCard(cidToCard(this.state.card));
+  play(key) {
+    console.log('clicked on card: ' + key);
+    console.log('card: ' + cardToString(cidToCard(key)));
+    this.props.moves.playCard(cidToCard(key));
   }
 
   render() {
-    if (!set) {
-      let that = this;
-      cards.playCard = function ($card) {
-        const card = cidToCard(cards.cid($card));
-        that.props.moves.playCard(card);
-      };
-      set = true;
-    }
-
-    let hands = [];
-    let i = 0;
-    for (const player of this.props.G.players) {
-      let hand = [];
-      let cards = [];
-      for (const card of player.hand) {
-        cards.push(<img key={'c_' + i} className='card' alt='' src={getCardUri(card)}/>);
-        i++;
-      }
-      hand.push(<div key={'h_' + i} className="hand hhand-compact active-hand">{cards}</div>);
-      hands.push(hand);
-    }
-
-    let table = [];
-    i = 0;
-    for (const card of this.props.G.table) {
-      let cardEl = [];
-      cardEl.push(<img key={'t_' + i} className='card' alt='' src={getCardUri(card)}/>);
-      i++;
-      table.push(cardEl);
-    }
-    while (table.length < 4) {
-      table.push('');
-    }
+    const handStyle = {
+      margin: "auto",
+      width: "55%",
+      paddingBottom: "5%",
+      paddingTop: "5%",
+      left: "45%",
+      top: "50%"
+    };
 
     return (
         <div>
@@ -78,18 +64,18 @@ class PandoerTable extends React.Component {
           # score team 2: {this.props.G.roundScore[1]} ({this.props.G.tricks[1].length} slagen)<br/>
 
           Tafel:
-          {table[0]}
-          {table[1]}
-          {table[2]}
-          {table[3]}<br/>
+          <div style={handStyle}>
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.table)} cardSize={this.getCardSize(cardsToCid(this.props.G.table))} onClick={()=>{}}/>
+          </div>
 
           Troef: {this.props.G.trump}<br/>
           Handen: <br/>
-          <input type="text" value={this.card} onChange={this.handleChange}/><button onClick={this.play}>play</button><br/>
-          {hands[0]}<br/>
-          {hands[1]}<br/>
-          {hands[2]}<br/>
-          {hands[3]}<br/><br/>
+          <div style={handStyle}>
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[0].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[0].hand))}/>
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[1].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[1].hand))}/>
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[2].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[2].hand))}/>
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[3].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[3].hand))}/>
+          </div>
 
           Gemel:
           {this.props.G.players[0].name}: {this.props.G.players[0].announcementScore} ({this.props.G.players[0].announcement.length})<br/>
@@ -97,7 +83,6 @@ class PandoerTable extends React.Component {
           {this.props.G.players[2].name}: {this.props.G.players[2].announcementScore} ({this.props.G.players[2].announcement.length})<br/>
           {this.props.G.players[3].name}: {this.props.G.players[3].announcementScore} ({this.props.G.players[3].announcement.length})<br/>
         </div>
-
     )
   }
 }
