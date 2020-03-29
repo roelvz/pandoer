@@ -238,7 +238,7 @@ class Hand extends Component {
 
         return (
         <div className={'Hand'}
-          style={{ 'height': this.state.layout === 'stack' ? this.state.cardSize : this.state.cardSize * 2}} >
+          style={{ 'height': this.state.layout === 'stack' || this.state.layout === 'spread' ? this.state.cardSize : this.state.cardSize * 2}} >
           {
               this.state.cards.map((card) => {
                   // console.log('id: ', card);

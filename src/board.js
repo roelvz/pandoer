@@ -66,11 +66,7 @@ class PandoerTable extends React.Component {
   render() {
     const handStyle = {
       margin: "auto",
-      width: "60%",
-      paddingBottom: "5%",
-      paddingTop: "5%",
-      left: "45%",
-      top: "50%"
+      width: "70%",
     };
 
     function showLastPlayedCard(that, card) {
@@ -96,7 +92,6 @@ class PandoerTable extends React.Component {
           Hoogst roepende speler: {this.props.G.highestShoutingPlayer !== undefined ? this.props.G.players[this.props.G.highestShoutingPlayer].name : ''}<br/><br/>
           Hoogste kaart op tafel: {cardToString(this.props.G.highestCardOnTable)}<br/>
           Speler met hoogste kaart op tafel: {this.props.G.playerWithHighestCardOnTable}<br/>
-          Speler die vorige slag won: {this.props.playerWhoWonPreviousTrick}<br/><br/>
           Aanvallend team: {this.props.G.attackingTeam}<br/><br/>
 
           # score team 1: {this.props.G.roundScore[0]} ({this.props.G.tricks[0].length} slagen)<br/>
