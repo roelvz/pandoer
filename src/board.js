@@ -1,6 +1,6 @@
 import React from 'react';
 import { cardToString, cidToCard, cardToCid, cardsToCid } from './cardUtils';
-import { shouldAnnounce } from './game';
+import { shouldAnnounce, isLegalPlay } from './game';
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 
@@ -14,6 +14,7 @@ class PandoerTable extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.play = this.play.bind(this);
     this.removeCard = this.removeCard.bind(this);
+    this.simulate = this.simulate.bind(this);
   }
 
   getCardSize(cards) {
@@ -38,6 +39,30 @@ class PandoerTable extends React.Component {
     this.props.moves.removeCardFromAnnouncement(cidToCard(key));
   }
 
+  simulate() {
+    if (this.props.ctx.phase === 'shouts') {
+      if (this.props.ctx.currentPlayer === '0') {
+        this.props.moves.shout(200);
+      } else {
+        this.props.moves.pass();
+      }
+    } else {
+      if (shouldAnnounce(this.props.G, this.props.ctx)) {
+        this.props.moves.announce();
+      }
+      for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
+        if (isLegalPlay(this.props.G, this.props.ctx, card)) {
+          this.props.moves.playCard(card);
+          break;
+        }
+      }
+    }
+
+    setTimeout(() => {
+      this.simulate();
+    }, 1);
+  }
+
   render() {
     const handStyle = {
       margin: "auto",
@@ -57,7 +82,7 @@ class PandoerTable extends React.Component {
     return (
         <div>
           Team 1: {this.props.G.scoreBoard[0]}<br/>
-          Team 1: {this.props.G.scoreBoard[1]}<br/><br/>
+          Team 2: {this.props.G.scoreBoard[1]}<br/><br/>
 
           fase: {this.props.ctx.phase === 'shouts' ? 'roepen' : 'spelen'}<br/>
           beurt: {this.props.ctx.turn}<br/><br/>
@@ -82,7 +107,8 @@ class PandoerTable extends React.Component {
             <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.table)} cardSize={this.getCardSize(cardsToCid(this.props.G.table))} onClick={()=>{}}/>
           </div>
 
-          Troef: {this.props.G.trump}<br/>
+          Troef: {this.props.G.trump}<br/><br/>
+          <button id={"simulate"} onClick={this.simulate}>Simulate</button><br/><br/>
           Handen: <br/>
           <div style={handStyle}>
             <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[0].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[0].hand))}/>{showLastPlayedCard(this, this.props.G.players[0].lastPlayedCard)}

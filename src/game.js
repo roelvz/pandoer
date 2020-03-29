@@ -404,7 +404,6 @@ const Pandoer = {
       next: 'play', // different play phases will follow each other
       moves: {
         playCard(G, ctx, card) {
-          console.log('Playing card: ' + cardToString(card));
           if (shouldAnnounce(G, ctx)) {
             return INVALID_MOVE;
           }
@@ -543,6 +542,8 @@ const Pandoer = {
           G.roundScore = [0, 0];
           G.roundShout = 0;
           G.playerWhoWonPreviousTrick = undefined;
+          G.tricks[0] = [];
+          G.tricks[1] = [];
           for (const player of G.players) {
             player.hasAnnounced = false;
             player.announcement = [];
