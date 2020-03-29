@@ -9,12 +9,15 @@ class PandoerTable extends React.Component {
     super(props);
     this.state = {
       layout: "spread",
+      shoutValue: 0,
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.play = this.play.bind(this);
     this.removeCard = this.removeCard.bind(this);
     this.simulate = this.simulate.bind(this);
+    this.shout = this.shout.bind(this);
+    this.pass = this.pass.bind(this);
   }
 
   getCardSize(cards) {
@@ -23,7 +26,15 @@ class PandoerTable extends React.Component {
   }
 
   handleChange(event) {
-    this.setState({card: event.target.value});
+    this.setState({shoutValue: parseInt(event.target.value)});
+  }
+
+  shout(event) {
+    this.props.moves.shout(this.state.shoutValue);
+  }
+
+  pass(event) {
+    this.props.moves.pass();
   }
 
   play(key) {
@@ -87,6 +98,7 @@ class PandoerTable extends React.Component {
           {this.props.G.players[1].name}: {this.props.G.players[1].hand.length} | {this.props.G.players[1].shout || (this.props.G.players[1].passed ? 'pas' : 'niet geroepen')}<br/>
           {this.props.G.players[2].name}: {this.props.G.players[2].hand.length} | {this.props.G.players[2].shout || (this.props.G.players[2].passed ? 'pas' : 'niet geroepen')}<br/>
           {this.props.G.players[3].name}: {this.props.G.players[3].hand.length} | {this.props.G.players[3].shout || (this.props.G.players[3].passed ? 'pas' : 'niet geroepen')}<br/><br/>
+          <input onChange={this.handleChange}/><button onClick={this.shout}>Roepen</button><button onClick={this.pass}>Pas</button><br/><br/>
 
           Speler aan zet: {this.props.G.players[this.props.ctx.currentPlayer].name}<br/>
           Hoogst roepende speler: {this.props.G.highestShoutingPlayer !== undefined ? this.props.G.players[this.props.G.highestShoutingPlayer].name : ''}<br/><br/>

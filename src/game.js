@@ -1,5 +1,5 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, removeCard, removeRanksForSuit,
+import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, removeCard, removeRanksForSuit,
   removeSuitsForRank, containsCard, sortCards, areCardsEqual } from "./cardUtils";
 
 // TODO: deler laten opschuiven

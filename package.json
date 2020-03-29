@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^7.1.2",
     "boardgame.io": "^0.38.1",
     "cardsJS": "^1.1.1",
+    "esm": "^3.2.25",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-draggable": "^4.2.0",
