@@ -8,10 +8,7 @@ class PandoerTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      card: '',
-      hand: ["1d", "1c", "1s", "1s", "1h"],
       layout: "spread",
-      handSize: "4",
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -20,9 +17,6 @@ class PandoerTable extends React.Component {
   }
 
   getCardSize(cards) {
-    // console.log("window: ", window.innerWidth);
-    // console.log('handsize', this.state.hand.length);
-    // console.log("size: ", window.innerWidth / this.state.hand.length);
     let cardSize = window.innerWidth / cards.length;
     return this.state.layout !== "spread" || cardSize > 100 ? 100 : cardSize;
   }
@@ -47,7 +41,7 @@ class PandoerTable extends React.Component {
   render() {
     const handStyle = {
       margin: "auto",
-      width: "55%",
+      width: "60%",
       paddingBottom: "5%",
       paddingTop: "5%",
       left: "45%",

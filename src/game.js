@@ -11,7 +11,7 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToStri
 // TODO: laatste slag tonen
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
-const trumpRankOrder = [8,10,12,13,14,9,11];
+const trumpRankOrder = [10,12,13,14,9,11];
 
 
 function getPlayerTeam(player) {
@@ -62,8 +62,6 @@ function isCard1HigherThanCard2(G, card1, card2) {
 function getCardScore(trump, card) {
   if (trump === card.suit) {
     switch (card.rank) {
-      case 8:
-        return 0;
       case 9:
         return 14;
       case 10:
@@ -81,7 +79,6 @@ function getCardScore(trump, card) {
     }
   } else {
     switch (card.rank) {
-      case 8:
       case 9:
         return 0;
       case 10:
@@ -118,7 +115,6 @@ function getAnnouncementScore(cards, trump, ignoreMarriage = false) {
 
   function check5ConsecutiveCards(suit) {
     return (
-        (left = removeRanksForSuit(left, suit, [8,9,10,11,12])).length < cards.length ? 100 : 0 ||
         (left = removeRanksForSuit(left, suit, [9,10,11,12,13])).length < cards.length ? 100 : 0  ||
         (left = removeRanksForSuit(left, suit, [10,11,12,13,14])).length < cards.length ? 100 : 0
     );
@@ -126,7 +122,6 @@ function getAnnouncementScore(cards, trump, ignoreMarriage = false) {
 
   function check4ConsecutiveCards(suit) {
     return (
-        (left = removeRanksForSuit(left, suit, [8,9,10,11])).length < cards.length ? 50 : 0 ||
         (left = removeRanksForSuit(left, suit, [9,10,11,12])).length < cards.length ? 50 : 0  ||
         (left = removeRanksForSuit(left, suit, [10,11,12,13])).length < cards.length ? 50 : 0 ||
         (left = removeRanksForSuit(left, suit, [11,12,13,14])).length < cards.length ? 50 : 0
@@ -135,7 +130,6 @@ function getAnnouncementScore(cards, trump, ignoreMarriage = false) {
 
   function check3ConsecutiveCards(suit) {
     return (
-        (left = removeRanksForSuit(left, suit, [8,9,10])).length < cards.length ? 20 : 0 ||
         (left = removeRanksForSuit(left, suit, [9,10,11])).length < cards.length ? 20 : 0  ||
         (left = removeRanksForSuit(left, suit, [10,11,12])).length < cards.length ? 20 : 0 ||
         (left = removeRanksForSuit(left, suit, [11,12,13])).length < cards.length ? 20 : 0 ||

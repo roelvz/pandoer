@@ -5,7 +5,7 @@ const SPADES = 'Spades';
 const Suits = [HEARTS, DIAMONDS, CLUBS, SPADES];
 const defaultSuitOrder = [HEARTS, SPADES, DIAMONDS, CLUBS];
 
-function initDeck(minRank = 8,
+function initDeck(minRank = 9,
                   maxRank = 14, // Ace = 14, for ease of rank comparisons
                   deckMultiplier = 2) { // default dobbelen boek :-)
   let result = [];
