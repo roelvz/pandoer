@@ -96,8 +96,42 @@ class PandoerTable extends React.Component {
       }
     }
 
+    function getAction(that) {
+      if (that.props.ctx.currentPlayer === that.getId()) {
+        if (that.props.ctx.phase === 'shouts') {
+          return <div>
+            <h1>Uw beurt, roepen of passen</h1>
+          </div>
+        } else if (shouldAnnounce(that.props.G, that.props.ctx)) {
+          return <div>
+            <h1>Uw beurt, kies kaarten om te tonen en toon</h1>
+          </div>
+        } else {
+          return <div>
+            <h1>Uw beurt, speel een kaart</h1>
+          </div>
+        }
+      } else {
+        console.log(that);
+        if (that.props.ctx.phase === 'shouts') {
+          return <div>
+            <h1>{that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om te roepen of te passen</h1>
+          </div>
+        } else if(shouldAnnounce(that.props.G, that.props.ctx)) {
+          return <div>
+            <h1>{that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om te tonen</h1>
+          </div>
+        } else {
+          return <div>
+            <h1>{that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om een kaart te spelen</h1>
+          </div>
+        }
+      }
+    }
+
     return (
         <div>
+          {getAction(this)}
           {/*PlayerID: {this.getId()}<br/>*/}
           Boom:<br/>
           Team 1: {this.props.G.scoreBoard[0]}<br/>
@@ -113,7 +147,7 @@ class PandoerTable extends React.Component {
           {this.props.G.playersKnownInfo[2].name}: {this.props.G.playersKnownInfo[2].shout || (this.props.G.playersKnownInfo[2].passed ? 'pas' : 'niet geroepen')}<br/>
           {this.props.G.playersKnownInfo[3].name}: {this.props.G.playersKnownInfo[3].shout || (this.props.G.playersKnownInfo[3].passed ? 'pas' : 'niet geroepen')}<br/><br/>
 
-          Attacking team: {this.props.G.attackingTeam}<br/>
+          {/*Attacking team: {this.props.G.attackingTeam}<br/>*/}
           Team 1: Aantal slagen: {this.props.G.tricks[0].length} {this.props.G.attackingTeam === 0 ? '(de goei)' : '(de slechte)'}<br/>
           Team 2: Aantal slagen: {this.props.G.tricks[1].length} {this.props.G.attackingTeam === 1 ? '(de goei)' : '(de slechte)'}<br/><br/>
 
@@ -127,13 +161,14 @@ class PandoerTable extends React.Component {
           <div style={handStyle}>
             <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[this.getId()].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[this.getId()].hand))}/>{showLastPlayedCard(this, this.props.G.players[this.getId()].lastPlayedCard)}
           </div>
-          Laatst gespeelde kaart: {showLastPlayedCard(this, this.props.G.playersKnownInfo[this.getId()].lastPlayedCard)}
+          <div>
+            Laatst gespeelde kaart: {showLastPlayedCard(this, this.props.G.playersKnownInfo[this.getId()].lastPlayedCard)}
+          </div>
 
           Toon:
           <div style={handStyle}>
             <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.playersKnownInfo[this.getId()].announcement)} cardSize={this.getCardSize(cardsToCid(this.props.G.playersKnownInfo[this.getId()].announcement))} onClick={this.removeCard}/>
-            Score: {this.props.G.playersKnownInfo[this.getId()].announcementScore}
-            <button onClick={this.announce}>Announce</button>
+            Score: {this.props.G.playersKnownInfo[this.getId()].announcementScore}<button onClick={this.announce}>Tonen</button>
           </div>
 
           {/*Speler aan zet: {this.props.G.players[this.props.ctx.currentPlayer].name}<br/>*/}
