@@ -15,7 +15,6 @@ class PandoerTable extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.play = this.play.bind(this);
     this.removeCard = this.removeCard.bind(this);
-    this.simulate = this.simulate.bind(this);
     this.shout = this.shout.bind(this);
     this.pass = this.pass.bind(this);
     this.getId = this.getId.bind(this);
@@ -58,30 +57,6 @@ class PandoerTable extends React.Component {
 
   getId() {
     return getPlayerId(this.props.G, this.props.ctx);
-  }
-
-  simulate() {
-    if (this.props.ctx.phase === 'shouts') {
-      if (this.props.ctx.currentPlayer === '0') {
-        this.props.moves.shout(200);
-      } else {
-        this.props.moves.pass();
-      }
-    } else {
-      if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
-        this.props.moves.announce();
-      }
-      for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
-        if (isLegalPlay(this.props.G, this.props.ctx, card)) {
-          this.props.moves.playCard(card);
-          break;
-        }
-      }
-    }
-
-    setTimeout(() => {
-      this.simulate();
-    }, 1);
   }
 
   render() {
@@ -186,40 +161,6 @@ class PandoerTable extends React.Component {
 
           Toon:
           {getAnnouncement(this)}
-
-          {/*Speler aan zet: {this.props.G.players[this.props.ctx.currentPlayer].name}<br/>*/}
-          {/*Hoogst roepende speler: {this.props.G.highestShoutingPlayer !== undefined ? this.props.G.players[this.props.G.highestShoutingPlayer].name : ''}<br/><br/>*/}
-          {/*Hoogste kaart op tafel: {cardToString(this.props.G.highestCardOnTable)}<br/>*/}
-          {/*Speler met hoogste kaart op tafel: {this.props.G.playerWithHighestCardOnTable}<br/>*/}
-          {/*Aanvallend team: {this.props.G.attackingTeam}<br/><br/>*/}
-
-          {/*# score team 1: {this.props.G.roundScore[0]} ({this.props.G.tricks[0].length} slagen)<br/>*/}
-          {/*# score team 2: {this.props.G.roundScore[1]} ({this.props.G.tricks[1].length} slagen)<br/>*/}
-
-          {/*Tafel:*/}
-
-
-          {/*Troef: {this.props.G.trump}<br/><br/>*/}
-          {/*<button id={"simulate"} onClick={this.simulate}>Simulate</button><br/><br/>*/}
-          {/*Handen: <br/>*/}
-          {/*<div style={handStyle}>*/}
-          {/*  /!*<Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[0].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[0].hand))}/>{showLastPlayedCard(this, this.props.G.players[0].lastPlayedCard)}*!/*/}
-          {/*  /!*<Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[1].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[1].hand))}/>{showLastPlayedCard(this, this.props.G.players[1].lastPlayedCard)}*!/*/}
-          {/*  /!*<Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[2].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[2].hand))}/>{showLastPlayedCard(this, this.props.G.players[2].lastPlayedCard)}*!/*/}
-          {/*  /!*<Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[3].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[3].hand))}/>{showLastPlayedCard(this, this.props.G.players[3].lastPlayedCard)}*!/*/}
-          {/*</div>*/}
-
-          {/*Toon:*/}
-          {/*<div style={handStyle}>*/}
-          {/*  <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[this.props.ctx.currentPlayer].announcement)} cardSize={this.getCardSize(cardsToCid(this.props.G.players[this.props.ctx.currentPlayer].announcement))} onClick={this.removeCard}/>*/}
-          {/*  Score: {this.props.G.players[this.props.ctx.currentPlayer].announcementScore}*/}
-          {/*</div>*/}
-
-          {/*Gemel:*/}
-          {/*/!*{this.props.G.players[0].name}: {this.props.G.players[0].announcementScore} ({this.props.G.players[0].announcement.length})<br/>*!/*/}
-          {/*/!*{this.props.G.players[1].name}: {this.props.G.players[1].announcementScore} ({this.props.G.players[1].announcement.length})<br/>*!/*/}
-          {/*/!*{this.props.G.players[2].name}: {this.props.G.players[2].announcementScore} ({this.props.G.players[2].announcement.length})<br/>*!/*/}
-          {/*/!*{this.props.G.players[3].name}: {this.props.G.players[3].announcementScore} ({this.props.G.players[3].announcement.length})<br/>*!/*/}
         </div>
     )
   }

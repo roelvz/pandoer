@@ -3,13 +3,12 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, removeCard
   removeSuitsForRank, containsCard, sortCards, areCardsEqual } from "./cardUtils";
 import {PlayerView} from "boardgame.io/dist/esm/core";
 
-// TODO: bug: aantal slagen na ronde 1 staat op 1
-// TODO: bug: toon in tweede ronde is nu direct
 // TODO: rondpassen
 // TODO: "give up"
 // TODO: non-random order
 // TODO: validate announcement (niet teveel laten zien)
 // TODO: laatste slag tonen
+// TODO: bug: aantal slagen na ronde 1 staat op 1 (fix without workaround)
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
 const trumpRankOrder = [10,12,13,14,9,11];
@@ -262,6 +261,9 @@ const Pandoer = {
     playerWithHighestCardOnTable: undefined,
     playerWhoWonPreviousTrick: undefined,
     lastAnnouncingPlayer: undefined,
+
+    // TODO: fix workaround
+    playPhaseEnded: false,
 
     players: {
       '0': {
@@ -524,6 +526,11 @@ const Pandoer = {
       },
 
       onEnd(G, ctx) {
+        if (G.playPhaseEnded) {
+          G.playPhaseEnded = false;
+          return G;
+        }
+
         let winningTeam = getPlayerTeam(G.playerWithHighestCardOnTable);
 
         // Add score to winning team
@@ -580,6 +587,7 @@ const Pandoer = {
 
           // initiate deck again so that it can be dealt the beginning of the next turn
           G.deck = initDeck();
+          G.playPhaseEnded = true;
           ctx.events.setPhase('shouts');
         }
 

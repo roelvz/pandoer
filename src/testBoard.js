@@ -39,7 +39,7 @@ class TestPandoerTable extends React.Component {
 
   play(key) {
     console.log('clicked on card in hand: ' + key);
-    if (shouldAnnounce(this.props.G, this.props.ctx)) {
+    if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
       this.props.moves.addCardToAnnouncement(cidToCard(key));
     } else {
       this.props.moves.playCard(cidToCard(key));
@@ -51,6 +51,10 @@ class TestPandoerTable extends React.Component {
   }
 
   simulate() {
+    if (this.props.G.players[this.props.ctx.currentPlayer].hand.length === 1) {
+      return;
+    }
+
     if (this.props.ctx.phase === 'shouts') {
       if (this.props.ctx.currentPlayer === '0') {
         this.props.moves.shout(200);
@@ -58,13 +62,14 @@ class TestPandoerTable extends React.Component {
         this.props.moves.pass();
       }
     } else {
-      if (shouldAnnounce(this.props.G, this.props.ctx)) {
+      if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
         this.props.moves.announce();
-      }
-      for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
-        if (isLegalPlay(this.props.G, this.props.ctx, card)) {
-          this.props.moves.playCard(card);
-          break;
+      } else {
+        for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
+          if (isLegalPlay(this.props.G, this.props.ctx, card)) {
+            this.props.moves.playCard(card);
+            break;
+          }
         }
       }
     }
@@ -94,14 +99,14 @@ class TestPandoerTable extends React.Component {
           fase: {this.props.ctx.phase === 'shouts' ? 'roepen' : 'spelen'}<br/>
           beurt: {this.props.ctx.turn}<br/><br/>
 
-          {this.props.G.players[0].name}: {this.props.G.players[0].hand.length} | {this.props.G.players[0].shout || (this.props.G.players[0].passed ? 'pas' : 'niet geroepen')}<br/>
-          {this.props.G.players[1].name}: {this.props.G.players[1].hand.length} | {this.props.G.players[1].shout || (this.props.G.players[1].passed ? 'pas' : 'niet geroepen')}<br/>
-          {this.props.G.players[2].name}: {this.props.G.players[2].hand.length} | {this.props.G.players[2].shout || (this.props.G.players[2].passed ? 'pas' : 'niet geroepen')}<br/>
-          {this.props.G.players[3].name}: {this.props.G.players[3].hand.length} | {this.props.G.players[3].shout || (this.props.G.players[3].passed ? 'pas' : 'niet geroepen')}<br/><br/>
+          {this.props.G.playersKnownInfo[0].name}: {this.props.G.players[0].hand.length} | {this.props.G.playersKnownInfo[0].shout || (this.props.G.playersKnownInfo[0].passed ? 'pas' : 'niet geroepen')}<br/>
+          {this.props.G.playersKnownInfo[1].name}: {this.props.G.players[1].hand.length} | {this.props.G.playersKnownInfo[1].shout || (this.props.G.playersKnownInfo[1].passed ? 'pas' : 'niet geroepen')}<br/>
+          {this.props.G.playersKnownInfo[2].name}: {this.props.G.players[2].hand.length} | {this.props.G.playersKnownInfo[2].shout || (this.props.G.playersKnownInfo[2].passed ? 'pas' : 'niet geroepen')}<br/>
+          {this.props.G.playersKnownInfo[3].name}: {this.props.G.players[3].hand.length} | {this.props.G.playersKnownInfo[3].shout || (this.props.G.playersKnownInfo[3].passed ? 'pas' : 'niet geroepen')}<br/><br/>
           <input onChange={this.handleChange}/><button onClick={this.shout}>Roepen</button><button onClick={this.pass}>Pas</button><br/><br/>
 
-          Speler aan zet: {this.props.G.players[this.props.ctx.currentPlayer].name}<br/>
-          Hoogst roepende speler: {this.props.G.highestShoutingPlayer !== undefined ? this.props.G.players[this.props.G.highestShoutingPlayer].name : ''}<br/><br/>
+          Speler aan zet: {this.props.G.playersKnownInfo[this.props.ctx.currentPlayer].name}<br/>
+          Hoogst roepende speler: {this.props.G.highestShoutingPlayer !== undefined ? this.props.G.playersKnownInfo[this.props.G.highestShoutingPlayer].name : ''}<br/><br/>
           Hoogste kaart op tafel: {cardToString(this.props.G.highestCardOnTable)}<br/>
           Speler met hoogste kaart op tafel: {this.props.G.playerWithHighestCardOnTable}<br/>
           Aanvallend team: {this.props.G.attackingTeam}<br/><br/>
@@ -126,15 +131,15 @@ class TestPandoerTable extends React.Component {
 
           Toon:
           <div style={handStyle}>
-            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[this.props.ctx.currentPlayer].announcement)} cardSize={this.getCardSize(cardsToCid(this.props.G.players[this.props.ctx.currentPlayer].announcement))} onClick={this.removeCard}/>
-            Score: {this.props.G.players[this.props.ctx.currentPlayer].announcementScore}
+            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.playersKnownInfo[this.props.ctx.currentPlayer].announcement)} cardSize={this.getCardSize(cardsToCid(this.props.G.playersKnownInfo[this.props.ctx.currentPlayer].announcement))} onClick={this.removeCard}/>
+            Score: {this.props.G.playersKnownInfo[this.props.ctx.currentPlayer].announcementScore}
           </div>
 
           Gemel:
-          {this.props.G.players[0].name}: {this.props.G.players[0].announcementScore} ({this.props.G.players[0].announcement.length})<br/>
-          {this.props.G.players[1].name}: {this.props.G.players[1].announcementScore} ({this.props.G.players[1].announcement.length})<br/>
-          {this.props.G.players[2].name}: {this.props.G.players[2].announcementScore} ({this.props.G.players[2].announcement.length})<br/>
-          {this.props.G.players[3].name}: {this.props.G.players[3].announcementScore} ({this.props.G.players[3].announcement.length})<br/>
+          {this.props.G.playersKnownInfo[0].name}: {this.props.G.playersKnownInfo[0].announcementScore} ({this.props.G.playersKnownInfo[0].announcement.length})<br/>
+          {this.props.G.playersKnownInfo[1].name}: {this.props.G.playersKnownInfo[1].announcementScore} ({this.props.G.playersKnownInfo[1].announcement.length})<br/>
+          {this.props.G.playersKnownInfo[2].name}: {this.props.G.playersKnownInfo[2].announcementScore} ({this.props.G.playersKnownInfo[2].announcement.length})<br/>
+          {this.props.G.playersKnownInfo[3].name}: {this.props.G.playersKnownInfo[3].announcementScore} ({this.props.G.playersKnownInfo[3].announcement.length})<br/>
         </div>
     )
   }
