@@ -19,6 +19,7 @@ class PandoerTable extends React.Component {
     this.pass = this.pass.bind(this);
     this.getId = this.getId.bind(this);
     this.announce = this.announce.bind(this);
+    this.resign = this.resign.bind(this);
   }
 
   getCardSize(cards) {
@@ -40,6 +41,10 @@ class PandoerTable extends React.Component {
 
   announce() {
     this.props.moves.announce();
+  }
+
+  resign() {
+    this.props.moves.resign();
   }
 
   play(key) {
@@ -160,7 +165,9 @@ class PandoerTable extends React.Component {
           <br/>
 
           Toon:
-          {getAnnouncement(this)}
+          {getAnnouncement(this)}<br/><br/>
+
+          <button onClick={this.resign}>Opgeven</button>
         </div>
     )
   }

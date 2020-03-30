@@ -3,13 +3,14 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, removeCard
   removeSuitsForRank, containsCard, sortCards, areCardsEqual } from "./cardUtils";
 import {PlayerView} from "boardgame.io/dist/esm/core";
 
-// TODO: "give up"
 // TODO: namen van spelers
+// TODO: pandoer (op tafel)
 // TODO: slagen tellen / score tonen
 // TODO: non-random order
 // TODO: validate announcement (niet teveel laten zien)
 // TODO: laatste slag tonen
 // TODO: bug: aantal slagen na ronde 1 staat op 1 (fix without workaround)
+// TODO: handen tonen op het einde
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
 const trumpRankOrder = [10,12,13,14,9,11];
@@ -262,6 +263,7 @@ const Pandoer = {
     playerWithHighestCardOnTable: undefined,
     playerWhoWonPreviousTrick: undefined,
     lastAnnouncingPlayer: undefined,
+    resigningPlayer: undefined,
 
     // TODO: fix workaround
     playPhaseEnded: false,
@@ -531,6 +533,10 @@ const Pandoer = {
             return INVALID_MOVE;
           }
         },
+
+        resign(G, ctx) {
+          G.resigningPlayer = ctx.currentPlayer;
+        },
       },
 
       onBegin(G, ctx) {
@@ -539,7 +545,7 @@ const Pandoer = {
 
       endIf(G, ctx) {
         // end phase if four cards are on the table
-        return G.table.length === 4;
+        return G.table.length === 4 || G.resigningPlayer !== undefined;
       },
 
       onEnd(G, ctx) {
@@ -548,14 +554,23 @@ const Pandoer = {
           return G;
         }
 
-        let winningTeam = getPlayerTeam(G.playerWithHighestCardOnTable);
+        // No need to count store if someone has resigned
+        if (G.resigningPlayer !== undefined) {
+          // Clear hands if someone has resigned
+          Object.keys(G.players).forEach(k => {
+            G.players[k].hand = [];
+          })
+        } else {
+          let winningTeam = getPlayerTeam(G.playerWithHighestCardOnTable);
 
-        // Add score to winning team
-        G.roundScore[winningTeam] += getCardsScore(G.trump, G.table);
+          // Add score to winning team
+          G.roundScore[winningTeam] += getCardsScore(G.trump, G.table);
 
-        // Add tricks from table to winning team
-        G.tricks[winningTeam].push(G.table);
-        G.lastTrick = G.table;
+          // Add tricks from table to winning team
+          G.tricks[winningTeam].push(G.table);
+          G.lastTrick = G.table;
+        }
+
         // Clear table
         G.table = [];
 
@@ -575,17 +590,24 @@ const Pandoer = {
 
         // No player has any cards left, it's the end of the round, count score.
         if (G.players[0].hand.length === 0) {
-
           const otherTeam = G.attackingTeam === 0 ? 1 : 0;
           const score = ~~(G.roundShout / 50);
-          if (G.roundScore[G.attackingTeam] > G.roundScore[otherTeam]) {
-            // attacking team won
+
+          let attackingTeamWon = G.roundScore[G.attackingTeam] > G.roundScore[otherTeam];
+
+          if (G.resigningPlayer !== undefined) {
+            const resigningTeam = getPlayerTeam(G.resigningPlayer);
+            attackingTeamWon = resigningTeam !== G.attackingTeam;
+          }
+
+          if (attackingTeamWon) {
             G.scoreBoard[G.attackingTeam] -= score;
           } else {
             // attacking team lost ('binnen')
             G.scoreBoard[G.attackingTeam] -= score;
             G.scoreBoard[otherTeam] += score;
           }
+
           // Cleanup
           G.trump = undefined;
           G.attackingTeam = undefined;
@@ -594,6 +616,7 @@ const Pandoer = {
           G.playerWhoWonPreviousTrick = undefined;
           G.tricks[0] = [];
           G.tricks[1] = [];
+          G.resigningPlayer = undefined;
           for (const key of Object.keys(G.playersKnownInfo)) {
             G.playersKnownInfo[key].hasAnnounced = false;
             G.playersKnownInfo[key].announcement = [];
