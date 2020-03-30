@@ -45,7 +45,7 @@ class PandoerTable extends React.Component {
 
   play(key) {
     console.log('clicked on card in hand: ' + key);
-    if (shouldAnnounce(this.props.G, this.props.ctx)) {
+    if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
       this.props.moves.addCardToAnnouncement(cidToCard(key));
     } else {
       this.props.moves.playCard(cidToCard(key));
@@ -68,7 +68,7 @@ class PandoerTable extends React.Component {
         this.props.moves.pass();
       }
     } else {
-      if (shouldAnnounce(this.props.G, this.props.ctx)) {
+      if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
         this.props.moves.announce();
       }
       for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
@@ -102,7 +102,7 @@ class PandoerTable extends React.Component {
           return <div>
             <h1>Uw beurt, roepen of passen</h1>
           </div>
-        } else if (shouldAnnounce(that.props.G, that.props.ctx)) {
+        } else if (shouldAnnounce(that.props.G, that.props.ctx, that.props.ctx.currentPlayer)) {
           return <div>
             <h1>Uw beurt, kies kaarten om te tonen en toon</h1>
           </div>
@@ -112,12 +112,11 @@ class PandoerTable extends React.Component {
           </div>
         }
       } else {
-        console.log(that);
         if (that.props.ctx.phase === 'shouts') {
           return <div>
             <h1>{that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om te roepen of te passen</h1>
           </div>
-        } else if(shouldAnnounce(that.props.G, that.props.ctx)) {
+        } else if(shouldAnnounce(that.props.G, that.props.ctx, that.props.ctx.currentPlayer)) {
           return <div>
             <h1>{that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om te tonen</h1>
           </div>
@@ -127,6 +126,24 @@ class PandoerTable extends React.Component {
           </div>
         }
       }
+    }
+
+    function getAnnouncement(that) {
+      let playerId;
+      if (shouldAnnounce(that.props.G, that.props.ctx, that.getId())) {
+        playerId = that.getId();
+      } else if (that.props.G.lastAnnouncingPlayer && that.props.G.playersKnownInfo[that.props.G.lastAnnouncingPlayer].hasAnnounced) {
+        playerId = that.props.G.lastAnnouncingPlayer;
+      } else {
+        return;
+      }
+      return <div style={handStyle}>
+        <Hand hide={false}
+              layout={that.state.layout}
+              cards={cardsToCid(that.props.G.playersKnownInfo[playerId].announcement)}
+              cardSize={that.getCardSize(cardsToCid(that.props.G.playersKnownInfo[playerId].announcement))} onClick={that.removeCard}/>
+        Score: {that.props.G.playersKnownInfo[playerId].announcementScore}<button onClick={that.announce}>Tonen</button>
+      </div>
     }
 
     return (
@@ -161,15 +178,14 @@ class PandoerTable extends React.Component {
           <div style={handStyle}>
             <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.players[this.getId()].hand)} onClick={this.play} cardSize={this.getCardSize(cardsToCid(this.props.G.players[this.getId()].hand))}/>{showLastPlayedCard(this, this.props.G.players[this.getId()].lastPlayedCard)}
           </div>
+          <br/>
           <div>
             Laatst gespeelde kaart: {showLastPlayedCard(this, this.props.G.playersKnownInfo[this.getId()].lastPlayedCard)}
           </div>
+          <br/>
 
           Toon:
-          <div style={handStyle}>
-            <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.playersKnownInfo[this.getId()].announcement)} cardSize={this.getCardSize(cardsToCid(this.props.G.playersKnownInfo[this.getId()].announcement))} onClick={this.removeCard}/>
-            Score: {this.props.G.playersKnownInfo[this.getId()].announcementScore}<button onClick={this.announce}>Tonen</button>
-          </div>
+          {getAnnouncement(this)}
 
           {/*Speler aan zet: {this.props.G.players[this.props.ctx.currentPlayer].name}<br/>*/}
           {/*Hoogst roepende speler: {this.props.G.highestShoutingPlayer !== undefined ? this.props.G.players[this.props.G.highestShoutingPlayer].name : ''}<br/><br/>*/}

@@ -5,7 +5,6 @@ import {PlayerView} from "boardgame.io/dist/esm/core";
 
 // TODO: bug: aantal slagen na ronde 1 staat op 1
 // TODO: bug: toon in tweede ronde is nu direct
-// TODO: toon van andere accepteren (na x seconden)
 // TODO: rondpassen
 // TODO: "give up"
 // TODO: non-random order
@@ -230,11 +229,11 @@ function getAnnouncementScore(cards, trump, ignoreMarriage = false) {
   return result;
 }
 
-function shouldAnnounce(G, ctx) {
-  const hasAnnounced = G.playersKnownInfo[ctx.currentPlayer].hasAnnounced;
-  const isPartOfAttackingTeam = getPlayerTeam(ctx.currentPlayer) === G.attackingTeam;
+function shouldAnnounce(G, ctx, playerId) {
+  const hasAnnounced = G.playersKnownInfo[playerId].hasAnnounced;
+  const isPartOfAttackingTeam = getPlayerTeam(playerId) === G.attackingTeam;
   const oneTrickHasBeenPlayed = G.tricks[0].length + G.tricks[1].length === 1;
-  return !hasAnnounced && isPartOfAttackingTeam && oneTrickHasBeenPlayed;
+  return (playerId === ctx.currentPlayer) && !hasAnnounced && isPartOfAttackingTeam && oneTrickHasBeenPlayed;
 }
 
 function getPlayerId(G, ctx) {
@@ -262,6 +261,7 @@ const Pandoer = {
     highestCardOnTable: undefined,
     playerWithHighestCardOnTable: undefined,
     playerWhoWonPreviousTrick: undefined,
+    lastAnnouncingPlayer: undefined,
 
     players: {
       '0': {
@@ -428,7 +428,7 @@ const Pandoer = {
       next: 'play', // different play phases will follow each other
       moves: {
         playCard(G, ctx, card) {
-          if (shouldAnnounce(G, ctx)) {
+          if (shouldAnnounce(G, ctx, ctx.currentPlayer)) {
             return INVALID_MOVE;
           }
 
@@ -462,7 +462,7 @@ const Pandoer = {
         },
 
         addCardToAnnouncement(G, ctx, card) {
-          if (shouldAnnounce(G, ctx)) {
+          if (shouldAnnounce(G, ctx, ctx.currentPlayer)) {
             if (containsCard(G.players[ctx.currentPlayer].hand, card)) {
               G.playersKnownInfo[ctx.currentPlayer].announcement.push(card);
               G.playersKnownInfo[ctx.currentPlayer].announcementScore = getAnnouncementScore(G.playersKnownInfo[ctx.currentPlayer].announcement, G.trump);
@@ -480,7 +480,7 @@ const Pandoer = {
         },
 
         removeCardFromAnnouncement(G, ctx, card) {
-          if (shouldAnnounce(G, ctx)) {
+          if (shouldAnnounce(G, ctx, ctx.currentPlayer)) {
             G.playersKnownInfo[ctx.currentPlayer].announcement = removeCard(G.playersKnownInfo[ctx.currentPlayer].announcement, card);
             G.playersKnownInfo[ctx.currentPlayer].announcementScore = getAnnouncementScore(G.playersKnownInfo[ctx.currentPlayer].announcement, G.trump);
 
@@ -496,7 +496,7 @@ const Pandoer = {
         },
 
         announce(G, ctx) {
-          if (shouldAnnounce(G, ctx)) {
+          if (shouldAnnounce(G, ctx, ctx.currentPlayer)) {
             G.playersKnownInfo[ctx.currentPlayer].hasAnnounced = true;
             G.roundScore[getPlayerTeam(ctx.currentPlayer)] += G.playersKnownInfo[ctx.currentPlayer].announcementScore;
             for (const card of G.playersKnownInfo[ctx.currentPlayer].announcement) {
@@ -507,6 +507,7 @@ const Pandoer = {
               }
             }
             G.players[ctx.currentPlayer].hand = sortCards(G.players[ctx.currentPlayer].hand);
+            G.lastAnnouncingPlayer = ctx.currentPlayer;
           } else {
             return INVALID_MOVE;
           }
@@ -546,6 +547,7 @@ const Pandoer = {
           G.playersKnownInfo[key].passed = false;
         }
         G.highestShoutingPlayer = undefined;
+        G.lastAnnouncingPlayer = undefined;
 
         // No player has any cards left, it's the end of the round, count score.
         if (G.players[0].hand.length === 0) {
