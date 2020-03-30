@@ -3,8 +3,9 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, removeCard
   removeSuitsForRank, containsCard, sortCards, areCardsEqual } from "./cardUtils";
 import {PlayerView} from "boardgame.io/dist/esm/core";
 
-// TODO: rondpassen
 // TODO: "give up"
+// TODO: namen van spelers
+// TODO: slagen tellen / score tonen
 // TODO: non-random order
 // TODO: validate announcement (niet teveel laten zien)
 // TODO: laatste slag tonen
@@ -358,6 +359,20 @@ const Pandoer = {
       return false;
     },
 
+    onEnd(G, ctx) {
+      if (ctx.phase === 'shouts') {
+        const allPlayersPassed = Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].passed).length === ctx.numPlayers;
+        if (allPlayersPassed) {
+          // new hands if everyone has passed
+          Object.keys(G.players).forEach(key => {
+            G.playersKnownInfo[key].passed = false;
+            G.players[key].hand = [];
+          });
+          G.deck = initDeck();
+        }
+      }
+    },
+
     order: {
       // default behaviour: start with first player
       first: (G, ctx) => 0,
@@ -412,10 +427,11 @@ const Pandoer = {
       },
 
       endIf(G, ctx) {
-        // end phase if all players have either shouted or passed
-        return Object.keys(G.playersKnownInfo).filter(key => {
-          return G.playersKnownInfo[key].shout === undefined && !G.playersKnownInfo[key].passed
-        }).length === 0;
+        const allPlayersPassed = Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].passed).length === ctx.numPlayers;
+        const allPlayersShoutedOrPassed = Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].shout === undefined && !G.playersKnownInfo[key].passed).length === 0;
+
+        // end phase if all players have either shouted or passed (and not everyone has passed)
+        return !allPlayersPassed && allPlayersShoutedOrPassed;
       },
 
       onEnd(G, ctx) {
@@ -423,6 +439,7 @@ const Pandoer = {
         G.roundShout = G.playersKnownInfo[G.highestShoutingPlayer].shout;
         G.dealer++;
         G.dealer %= ctx.numPlayers;
+        return G;
       }
     },
 
