@@ -16,8 +16,7 @@
     "uuid-lib": "0.0.6"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "server": "node -r esm src/server.js",
+    "start": "node -r esm src/server.js",
     "client": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
