@@ -20,7 +20,7 @@ const PandoerClient = Client({
   game: Pandoer,
   board: PandoerTable,
   numPlayers: 4,
-  multiplayer: SocketIO({server: 'localhost:8000' }),
+  multiplayer: SocketIO({server: 'https://immense-journey-70326.herokuapp.com/' }),
   debug: false,
   playerView: PlayerView.STRIP_SECRETS,
 });
