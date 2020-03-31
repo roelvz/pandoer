@@ -1,1 +1,1 @@
-server: node -r esm src/server.js
+bot: node -r esm src/server.js
