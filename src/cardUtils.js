@@ -33,10 +33,10 @@ function dealCards(G, ctx) {
     G.players[playerId].hand.push(card);
     playerId++;
     // cycle through players: 0, 1, 2, 3, 0, 1, 2, 3, ...
-    playerId %= G.players.length;
+    playerId %= ctx.numPlayers;
   }
-  for (const player of G.players) {
-    player.hand = sortCards(player.hand);
+  for (const key of Object.keys(G.players)) {
+    G.players[key].hand = sortCards(G.players[key].hand);
   }
 
   // Deck is empty now
@@ -228,6 +228,15 @@ function cidToCard(cid) {
   return { suit, rank };
 }
 
+function suitInDutch(suit) {
+  switch (suit) {
+    case HEARTS: return 'Harten';
+    case CLUBS: return 'Klaveren';
+    case DIAMONDS: return 'Ruiten';
+    case SPADES: return 'Schoppen';
+  }
+}
+
 export { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, cardToString, cidToCard, removeCard,
   containsCard, containsCards, containsRanksForSuit, containsSuitsForRank, removeSuitsForRank, removeRanksForSuit,
-  cardToCid, cardsToCid, sortCards, areCardsEqual }
+  cardToCid, cardsToCid, sortCards, areCardsEqual, suitInDutch }
