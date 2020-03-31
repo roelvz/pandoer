@@ -241,6 +241,101 @@ function getPlayerId(G, ctx) {
   return Object.keys(G.players)[0];
 }
 
+function resetTheGame(G) {
+  // The overall scoreboard (den boom)
+  G.scoreBoard = [startScore, startScore];
+  G.deck = initDeck();
+  G.table = [];
+
+  // The score for 1 round of playing
+  G.roundScore = [0, 0];
+  G.roundShout = 0;
+  G.dealer = 0;
+
+  G.tricks = [[], []];
+  G.lastTrick = undefined;
+  G.highestShoutingPlayer = undefined;
+  G.attackingTeam = undefined;
+  G.trump = undefined;
+  G.highestCardOnTable = undefined;
+  G.playerWithHighestCardOnTable = undefined;
+  G.playerWhoWonPreviousTrick = undefined;
+  G.lastAnnouncingPlayer = undefined;
+  G.resigningPlayer = undefined;
+  G.playPhaseEnded = false;
+  G.endGame = false;
+
+  G.players = {
+    '0': {
+      hand: [],
+    },
+    '1': {
+      hand: [],
+    },
+    '2': {
+      hand: [],
+    },
+    '3': {
+      hand: [],
+    },
+  };
+  G.playersKnownInfo = {
+    '0': {
+      name: "Player1",
+      shout: undefined,
+      shoutedPandoer: false,
+      shoutedPandoerOnTable: false,
+      passed: false,
+      hasPlayedCard: false,
+      lastPlayedCard: undefined,
+      lastPlayedCardInAnnouncement: false,
+      hasAnnounced: false,
+      announcement: [],
+      announcementScore: 0,
+    },
+    '1': {
+      name: "Player2",
+      shout: undefined,
+      shoutedPandoer: false,
+      shoutedPandoerOnTable: false,
+      passed: false,
+      hasPlayedCard: false,
+      lastPlayedCard: undefined,
+      lastPlayedCardInAnnouncement: false,
+      hasAnnounced: false,
+      announcement: [],
+      announcementScore: 0,
+    },
+    '2': {
+      name: "Player3",
+      shout: undefined,
+      shoutedPandoer: false,
+      shoutedPandoerOnTable: false,
+      passed: false,
+      hasPlayedCard: false,
+      lastPlayedCard: undefined,
+      lastPlayedCardInAnnouncement: false,
+      hasAnnounced: false,
+      announcement: [],
+      announcementScore: 0,
+    },
+    '3': {
+      name: "Player4",
+      shout: undefined,
+      shoutedPandoer: false,
+      shoutedPandoerOnTable: false,
+      passed: false,
+      hasPlayedCard: false,
+      lastPlayedCard: undefined,
+      lastPlayedCardInAnnouncement: false,
+      hasAnnounced: false,
+      announcement: [],
+      announcementScore: 0,
+    }
+  };
+  G.shouldReset = true;
+}
+
 const Pandoer = {
   setup: () => ({
     // The overall scoreboard (den boom)
@@ -335,7 +430,8 @@ const Pandoer = {
         announcement: [],
         announcementScore: 0,
       },
-    }
+    },
+    shouldReset: false,
   }),
 
   playerView: PlayerView.STRIP_SECRETS,
@@ -353,6 +449,10 @@ const Pandoer = {
     },
 
     endIf(G, ctx) {
+      if (G.shouldReset) {
+        return true;
+      }
+
       // end turn if player has shouted or passed
       let p = G.playersKnownInfo[ctx.currentPlayer];
       if (ctx.phase === 'shouts') {
@@ -370,7 +470,9 @@ const Pandoer = {
     },
 
     onEnd(G, ctx) {
-      if (ctx.phase === 'shouts') {
+      if (G.shouldReset) {
+        G.shouldReset = false;
+      } else if (ctx.phase === 'shouts') {
         const allPlayersPassed = Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].passed).length === ctx.numPlayers;
         if (allPlayersPassed) {
           // new hands if everyone has passed
@@ -381,6 +483,7 @@ const Pandoer = {
           G.deck = initDeck();
         }
       }
+      return G;
     },
 
     order: {
@@ -417,6 +520,10 @@ const Pandoer = {
       start: true,
       next: 'play',
       moves: {
+        resetGame(G, ctx) {
+          resetTheGame(G);
+        },
+
         shout(G, ctx, value) {
           if (isLegalShoutValue(value) &&
               (G.highestShoutingPlayer === undefined || value > G.playersKnownInfo[G.highestShoutingPlayer].shout)) {
@@ -479,6 +586,10 @@ const Pandoer = {
     play: {
       next: 'play', // different play phases will follow each other
       moves: {
+        resetGame(G, ctx) {
+          resetTheGame(G);
+        },
+
         playCard(G, ctx, card) {
           if (shouldAnnounce(G, ctx, ctx.currentPlayer)) {
             return INVALID_MOVE;
