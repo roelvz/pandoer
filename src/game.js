@@ -286,6 +286,8 @@ const Pandoer = {
       '0': {
         name: "Player1",
         shout: undefined,
+        shoutedPandoer: false,
+        shoutedPandoerOnTable: false,
         passed: false,
         hasPlayedCard: false,
         lastPlayedCard: undefined,
@@ -297,6 +299,8 @@ const Pandoer = {
       '1': {
         name: "Player2",
         shout: undefined,
+        shoutedPandoer: false,
+        shoutedPandoerOnTable: false,
         passed: false,
         hasPlayedCard: false,
         lastPlayedCard: undefined,
@@ -308,6 +312,8 @@ const Pandoer = {
       '2': {
         name: "Player3",
         shout: undefined,
+        shoutedPandoer: false,
+        shoutedPandoerOnTable: false,
         passed: false,
         hasPlayedCard: false,
         lastPlayedCard: undefined,
@@ -319,6 +325,8 @@ const Pandoer = {
       '3': {
         name: "Player4",
         shout: undefined,
+        shoutedPandoer: false,
+        shoutedPandoerOnTable: false,
         passed: false,
         hasPlayedCard: false,
         lastPlayedCard: undefined,
@@ -426,11 +434,34 @@ const Pandoer = {
           G.playersKnownInfo[ctx.currentPlayer].passed = true;
           G.playersKnownInfo[ctx.currentPlayer].shout = undefined;
         },
+
+        pandoer(G, ctx) {
+          if (Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].shoutedPandoer).length === 0) {
+            G.playersKnownInfo[ctx.currentPlayer].shoutedPandoer = true;
+            G.highestShoutingPlayer = ctx.currentPlayer;
+          } else {
+            return INVALID_MOVE;
+          }
+        },
+
+        pandoerOnTable(G, ctx) {
+          if (Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].shoutedPandoerOnTable).length === 0) {
+            G.playersKnownInfo[ctx.currentPlayer].shoutedPandoerOnTable = true;
+            G.highestShoutingPlayer = ctx.currentPlayer;
+          } else {
+            return INVALID_MOVE;
+          }
+        },
       },
 
       endIf(G, ctx) {
         const allPlayersPassed = Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].passed).length === ctx.numPlayers;
-        const allPlayersShoutedOrPassed = Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].shout === undefined && !G.playersKnownInfo[key].passed).length === 0;
+        const allPlayersShoutedOrPassed = Object.keys(G.playersKnownInfo).filter(key => {
+          return G.playersKnownInfo[key].shout === undefined &&
+              !G.playersKnownInfo[key].passed &&
+              !G.playersKnownInfo[key].shoutedPandoer &&
+              !G.playersKnownInfo[key].shoutedPandoerOnTable
+        }).length === 0;
 
         // end phase if all players have either shouted or passed (and not everyone has passed)
         return !allPlayersPassed && allPlayersShoutedOrPassed;
