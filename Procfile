@@ -1,1 +1,1 @@
-node -r esm src/server.js
+server: node -r esm src/server.js
