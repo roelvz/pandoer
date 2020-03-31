@@ -150,8 +150,8 @@ class PandoerTable extends React.Component {
           {this.props.G.playersKnownInfo[3].name}: {this.props.G.playersKnownInfo[3].shout || (this.props.G.playersKnownInfo[3].passed ? 'pas' : 'niet geroepen')}<br/><br/>
 
           {/*Attacking team: {this.props.G.attackingTeam}<br/>*/}
-          Team 1: Aantal slagen: {this.props.G.tricks[0].length} {this.props.G.attackingTeam === 0 ? '(de goei)' : '(de slechte)'}<br/>
-          Team 2: Aantal slagen: {this.props.G.tricks[1].length} {this.props.G.attackingTeam === 1 ? '(de goei)' : '(de slechte)'}<br/><br/>
+          Team 1: Aantal slagen: {this.props.G.tricks[0].length} {this.props.G.attackingTeam === undefined ? '' : (this.props.G.attackingTeam === 0 ? '(de goei)' : '(de slechte)')}<br/>
+          Team 2: Aantal slagen: {this.props.G.tricks[1].length} {this.props.G.attackingTeam === undefined ? '' : (this.props.G.attackingTeam === 1 ? '(de goei)' : '(de slechte)')}<br/><br/>
 
           Troef: {suitInDutch(this.props.G.trump)}<br/><br/>
 
