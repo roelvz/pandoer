@@ -18,6 +18,7 @@ class TestPandoerTable extends React.Component {
     this.simulate = this.simulate.bind(this);
     this.shout = this.shout.bind(this);
     this.pass = this.pass.bind(this);
+    this.acceptResult = this.acceptResult.bind(this);
   }
 
   getCardSize(cards) {
@@ -35,6 +36,10 @@ class TestPandoerTable extends React.Component {
 
   pass(event) {
     this.props.moves.pass();
+  }
+
+  acceptResult(event) {
+    this.props.moves.acceptResult();
   }
 
   play(key) {
@@ -91,13 +96,61 @@ class TestPandoerTable extends React.Component {
       }
     }
 
+    function getCountPhaseInfo(that) {
+      if (that.props.ctx.phase === 'countPoints') {
+        let extraInfo1 = '';
+        let extraInfo2 = '';
+        if (that.props.G.attackingTeam === 0) {
+          extraInfo1 = ' waarvan ' + (that.props.G.playersKnownInfo['0'].announcementScore + that.props.G.playersKnownInfo['2'].announcementScore) + ' toon';
+        } else {
+          extraInfo2 = ' waarvan ' + (that.props.G.playersKnownInfo['1'].announcementScore + that.props.G.playersKnownInfo['3'].announcementScore) + ' toon';
+        }
+
+        let winner;
+        if (that.props.G.roundScore[0] > that.props.G.roundScore[1]) {
+          winner = <h1>Team 1 is gewonnen</h1>
+        } else {
+          winner = <h1>Team 2 is gewonnen</h1>
+        }
+
+        return <div>
+          {winner}
+          Team 1 heeft {that.props.G.roundScore[0]} punten{extraInfo1}:
+          <div style={handStyle}>
+            <Hand hide={false} layout={"fan"}
+                  cards={cardsToCid(that.props.G.tricks[0].flat())}
+                  cardSize={that.getCardSize(cardsToCid(that.props.G.tricks[0].flat()))}
+                  onClick={() => {}}></Hand>
+          </div>
+          Team 2 heeft {that.props.G.roundScore[1]} punten{extraInfo2}:
+          <div style={handStyle}>
+            <Hand hide={false} layout={"fan"}
+                  cards={cardsToCid(that.props.G.tricks[1].flat())}
+                  cardSize={that.getCardSize(cardsToCid(that.props.G.tricks[1].flat()))}
+                  onClick={() => {}}></Hand>
+          </div>
+          <div>
+            <button onClick={that.acceptResult}>Ok, verder spelen</button>
+          </div>
+          <div>
+            {that.props.G.playersKnownInfo[0].name}: {that.props.G.playersKnownInfo[0].hasAcceptedResult ? 'geaccepteerd' : 'moet nog accepteren'}<br/>
+            {that.props.G.playersKnownInfo[1].name}: {that.props.G.playersKnownInfo[1].hasAcceptedResult ? 'geaccepteerd' : 'moet nog accepteren'}<br/>
+            {that.props.G.playersKnownInfo[2].name}: {that.props.G.playersKnownInfo[2].hasAcceptedResult ? 'geaccepteerd' : 'moet nog accepteren'}<br/>
+            {that.props.G.playersKnownInfo[3].name}: {that.props.G.playersKnownInfo[3].hasAcceptedResult ? 'geaccepteerd' : 'moet nog accepteren'}<br/>
+          </div>
+        </div>
+      }
+    }
+
     return (
         <div>
           Team 1: {this.props.G.scoreBoard[0]}<br/>
           Team 2: {this.props.G.scoreBoard[1]}<br/><br/>
 
-          fase: {this.props.ctx.phase === 'shouts' ? 'roepen' : 'spelen'}<br/>
+          fase: { this.props.ctx.phase === 'shouts' ? 'roepen' : (this.props.ctx.phase === 'play' ? 'spelen' : 'punten tellen')}<br/>
           beurt: {this.props.ctx.turn}<br/><br/>
+
+          {getCountPhaseInfo(this)}
 
           {this.props.G.playersKnownInfo[0].name}: {this.props.G.players[0].hand.length} | {this.props.G.playersKnownInfo[0].shout || (this.props.G.playersKnownInfo[0].passed ? 'pas' : 'niet geroepen')}<br/>
           {this.props.G.playersKnownInfo[1].name}: {this.props.G.players[1].hand.length} | {this.props.G.playersKnownInfo[1].shout || (this.props.G.playersKnownInfo[1].passed ? 'pas' : 'niet geroepen')}<br/>

@@ -286,6 +286,7 @@ function resetTheGame(G) {
   G.playerWhoWonPreviousTrick = undefined;
   G.lastAnnouncingPlayer = undefined;
   G.resigningPlayer = undefined;
+  G.roundResultHasBeenShown = false;
   G.playPhaseEnded = false;
   G.endGame = false;
 
@@ -414,6 +415,7 @@ const Pandoer = {
         hasAnnounced: false,
         announcement: [],
         announcementScore: 0,
+        hasAcceptedResult: false,
       },
       '1': {
         name: "Player2",
@@ -427,6 +429,7 @@ const Pandoer = {
         hasAnnounced: false,
         announcement: [],
         announcementScore: 0,
+        hasAcceptedResult: false,
       },
       '2': {
         name: "Player3",
@@ -440,6 +443,7 @@ const Pandoer = {
         hasAnnounced: false,
         announcement: [],
         announcementScore: 0,
+        hasAcceptedResult: false,
       },
       '3': {
         name: "Player4",
@@ -453,6 +457,7 @@ const Pandoer = {
         hasAnnounced: false,
         announcement: [],
         announcementScore: 0,
+        hasAcceptedResult: false,
       },
     },
     shouldReset: false,
@@ -606,7 +611,6 @@ const Pandoer = {
         return G;
       }
     },
-
     play: {
       next: 'play', // different play phases will follow each other
       moves: {
@@ -776,12 +780,8 @@ const Pandoer = {
 
           // Cleanup
           G.trump = undefined;
-          G.attackingTeam = undefined;
-          G.roundScore = [0, 0];
           G.roundShout = 0;
           G.playerWhoWonPreviousTrick = undefined;
-          G.tricks[0] = [];
-          G.tricks[1] = [];
           G.lastTrick = [];
           G.resigningPlayer = undefined;
           for (const key of Object.keys(G.playersKnownInfo)) {
@@ -793,12 +793,45 @@ const Pandoer = {
           }
 
           // initiate deck again so that it can be dealt the beginning of the next turn
-          G.deck = initDeck();
           G.playPhaseEnded = true;
-          ctx.events.setPhase('shouts');
+          ctx.events.setPhase('countPoints');
         }
 
         return G;
+      },
+    },
+    countPoints: {
+      next: 'shouts',
+
+      onBegin(G, ctx) {
+        ctx.events.setActivePlayers({all: 'accept'});
+      },
+
+      endIf(G, ctx) {
+        return Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].hasAcceptedResult).length === ctx.numPlayers;
+      },
+
+      onEnd(G, ctx) {
+        Object.keys(G.playersKnownInfo).forEach(key => {
+          G.playersKnownInfo[key].hasAcceptedResult = false;
+        });
+        G.attackingTeam = undefined;
+        G.roundScore = [0, 0];
+        G.tricks[0] = [];
+        G.tricks[1] = [];
+        G.deck = initDeck();
+      },
+
+      turn: {
+        stages: {
+          accept: {
+            moves: {
+              acceptResult(G, ctx, playerId) {
+                G.playersKnownInfo[playerId].hasAcceptedResult = true;
+              },
+            },
+          },
+        },
       },
     },
   },
