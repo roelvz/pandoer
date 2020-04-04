@@ -1,6 +1,6 @@
 import React from 'react';
 import { cidToCard, cardToCid, cardsToCid, suitInDutch } from './cardUtils';
-import { shouldAnnounce, isLegalPlay, getPlayerId } from './game';
+import { shouldAnnounce, isLegalPlay, getPlayerId, getTeamMatePlayerId } from './game';
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 
@@ -125,12 +125,28 @@ class PandoerTable extends React.Component {
       } else {
         return;
       }
+      let otherPlayerId = getTeamMatePlayerId(playerId);
+      console.log(playerId);
+      console.log(otherPlayerId);
+      let otherPlayerHand;
+      let score = that.props.G.playersKnownInfo[playerId].announcementScore;
+      let scoreString = score.toString();
+      if (that.props.G.playersKnownInfo[otherPlayerId].hasAnnounced) {
+        otherPlayerHand = <Hand hide={false}
+                                layout={that.state.layout}
+                                cards={cardsToCid(that.props.G.playersKnownInfo[otherPlayerId].announcement)}
+                                cardSize={that.getCardSize(cardsToCid(that.props.G.playersKnownInfo[otherPlayerId].announcement))} onClick={() => {}}/>
+        let otherScore = that.props.G.playersKnownInfo[otherPlayerId].announcementScore
+        score += otherScore;
+        scoreString += ` + ${otherScore} = ${score}`;
+      }
       return <div style={handStyle}>
         <Hand hide={false}
               layout={that.state.layout}
               cards={cardsToCid(that.props.G.playersKnownInfo[playerId].announcement)}
               cardSize={that.getCardSize(cardsToCid(that.props.G.playersKnownInfo[playerId].announcement))} onClick={that.removeCard}/>
-        Score: {that.props.G.playersKnownInfo[playerId].announcementScore}{button}
+        {otherPlayerHand}
+        Score: {scoreString}{button}
       </div>
     }
 
@@ -168,7 +184,7 @@ class PandoerTable extends React.Component {
           </div>
           <br/>
           <div>
-            Laatst gespeelde kaart: {showLastPlayedCard(this, this.props.G.playersKnownInfo[this.getId()].lastPlayedCard)}
+            Uw laatst gespeelde kaart: {showLastPlayedCard(this, this.props.G.playersKnownInfo[this.getId()].lastPlayedCard)}
           </div>
           <div>
             Toon:
@@ -184,7 +200,7 @@ class PandoerTable extends React.Component {
           <br/>
           <button onClick={this.resign}>Opgeven</button><br/><br/>
 
-          <button onClick={this.resetGame}>End game</button>
+          <button onClick={this.resetGame}>Spel volledig herstarten</button>
         </div>
     )
   }

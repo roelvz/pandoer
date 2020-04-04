@@ -241,6 +241,30 @@ function getPlayerId(G, ctx) {
   return Object.keys(G.players)[0];
 }
 
+function getTeamMatePlayerId(playerId) {
+  console.log(playerId);
+  let result = undefined;
+  switch (parseInt(playerId)) {
+    case 0: result = 2; break;
+    case 1: result = 3; break;
+    case 2: result = 0; break;
+    case 3: result = 1; break;
+    default: break;
+  }
+  console.log('RESULT: ' + result);
+  return result;
+}
+
+function getTeamMateAnnouncement(G, ctx, playerId) {
+  let result = undefined;
+  let otherPlayerId = getTeamMatePlayerId(playerId);
+  if (G.playersKnownInfo[otherPlayerId].hasAnnounced) {
+
+  }
+
+  return result;
+}
+
 function resetTheGame(G) {
   // The overall scoreboard (den boom)
   G.scoreBoard = [startScore, startScore];
@@ -780,4 +804,5 @@ const Pandoer = {
   },
 };
 
-export { Pandoer, getCardScore, getCardsScore, getAnnouncementScore, shouldAnnounce, isLegalPlay, getPlayerId }
+export { Pandoer, getCardScore, getCardsScore, getAnnouncementScore, shouldAnnounce, isLegalPlay, getPlayerId,
+  getTeamMatePlayerId }
