@@ -253,7 +253,7 @@ function resetTheGame(G) {
   G.dealer = 0;
 
   G.tricks = [[], []];
-  G.lastTrick = undefined;
+  G.lastTrick = [];
   G.highestShoutingPlayer = undefined;
   G.attackingTeam = undefined;
   G.trump = undefined;
@@ -350,7 +350,7 @@ const Pandoer = {
     dealer: 0,
     // tricks ('slagen') per team for this round
     tricks: [[],[]],
-    lastTrick: undefined,
+    lastTrick: [],
     highestShoutingPlayer: undefined,
     attackingTeam: undefined,
     trump: undefined,
@@ -758,6 +758,7 @@ const Pandoer = {
           G.playerWhoWonPreviousTrick = undefined;
           G.tricks[0] = [];
           G.tricks[1] = [];
+          G.lastTrick = [];
           G.resigningPlayer = undefined;
           for (const key of Object.keys(G.playersKnownInfo)) {
             G.playersKnownInfo[key].hasAnnounced = false;

@@ -167,6 +167,12 @@ class PandoerTable extends React.Component {
           <div>
             Laatst gespeelde kaart: {showLastPlayedCard(this, this.props.G.playersKnownInfo[this.getId()].lastPlayedCard)}
           </div>
+          <div>
+            Vorige slag:
+            <div style={handStyle}>
+              <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.lastTrick)} cardSize={this.getCardSize(cardsToCid(this.props.G.lastTrick))} onClick={()=>{}}/>
+            </div>
+          </div>
           <br/>
 
           Toon:
