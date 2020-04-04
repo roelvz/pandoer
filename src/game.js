@@ -255,16 +255,6 @@ function getTeamMatePlayerId(playerId) {
   return result;
 }
 
-function getTeamMateAnnouncement(G, ctx, playerId) {
-  let result = undefined;
-  let otherPlayerId = getTeamMatePlayerId(playerId);
-  if (G.playersKnownInfo[otherPlayerId].hasAnnounced) {
-
-  }
-
-  return result;
-}
-
 function resetTheGame(G) {
   // The overall scoreboard (den boom)
   G.scoreBoard = [startScore, startScore];

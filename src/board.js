@@ -205,6 +205,19 @@ class PandoerTable extends React.Component {
       }
     }
 
+    function getLastTrick(that) {
+      if (that.props.G.table.length === 0) {
+        return <div>
+          Vorige slag:
+          <div style={handStyle}>
+            <Hand hide={false} layout={that.state.layout} cards={cardsToCid(that.props.G.lastTrick)}
+                  cardSize={that.getCardSize(cardsToCid(that.props.G.lastTrick))} onClick={() => {
+            }}/>
+          </div>
+        </div>
+      }
+    }
+
     function getMain(that) {
       if (that.props.ctx.phase === 'countPoints') {
         return getCountPhaseInfo(that);
@@ -240,10 +253,7 @@ class PandoerTable extends React.Component {
             </div>
 
             <div>
-              Vorige slag:
-              <div style={handStyle}>
-                <Hand hide={false} layout={that.state.layout} cards={cardsToCid(that.props.G.lastTrick)} cardSize={that.getCardSize(cardsToCid(that.props.G.lastTrick))} onClick={()=>{}}/>
-              </div>
+              {getLastTrick(that)}
             </div>
             <br/>
             <button onClick={that.resign}>Opgeven</button><br/><br/>
