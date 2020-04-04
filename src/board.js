@@ -115,8 +115,11 @@ class PandoerTable extends React.Component {
 
     function getAnnouncement(that) {
       let playerId;
-      if (shouldAnnounce(that.props.G, that.props.ctx, that.getId())) {
+      let button;
+      const thisPlayerShouldAnnounce = shouldAnnounce(that.props.G, that.props.ctx, that.getId());
+      if (thisPlayerShouldAnnounce) {
         playerId = that.getId();
+        button = <button onClick={that.announce}>Tonen</button>
       } else if (that.props.G.lastAnnouncingPlayer && that.props.G.playersKnownInfo[that.props.G.lastAnnouncingPlayer].hasAnnounced) {
         playerId = that.props.G.lastAnnouncingPlayer;
       } else {
@@ -127,7 +130,7 @@ class PandoerTable extends React.Component {
               layout={that.state.layout}
               cards={cardsToCid(that.props.G.playersKnownInfo[playerId].announcement)}
               cardSize={that.getCardSize(cardsToCid(that.props.G.playersKnownInfo[playerId].announcement))} onClick={that.removeCard}/>
-        Score: {that.props.G.playersKnownInfo[playerId].announcementScore}<button onClick={that.announce}>Tonen</button>
+        Score: {that.props.G.playersKnownInfo[playerId].announcementScore}{button}
       </div>
     }
 
@@ -168,16 +171,17 @@ class PandoerTable extends React.Component {
             Laatst gespeelde kaart: {showLastPlayedCard(this, this.props.G.playersKnownInfo[this.getId()].lastPlayedCard)}
           </div>
           <div>
+            Toon:
+            {getAnnouncement(this)}<br/><br/>
+          </div>
+
+          <div>
             Vorige slag:
             <div style={handStyle}>
               <Hand hide={false} layout={this.state.layout} cards={cardsToCid(this.props.G.lastTrick)} cardSize={this.getCardSize(cardsToCid(this.props.G.lastTrick))} onClick={()=>{}}/>
             </div>
           </div>
           <br/>
-
-          Toon:
-          {getAnnouncement(this)}<br/><br/>
-
           <button onClick={this.resign}>Opgeven</button><br/><br/>
 
           <button onClick={this.resetGame}>End game</button>
