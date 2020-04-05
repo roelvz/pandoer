@@ -18,7 +18,10 @@ class TestPandoerTable extends React.Component {
     this.simulate = this.simulate.bind(this);
     this.shout = this.shout.bind(this);
     this.pass = this.pass.bind(this);
-    this.acceptResult = this.acceptResult.bind(this);
+    this.acceptResult1 = this.acceptResult1.bind(this);
+    this.acceptResult2 = this.acceptResult2.bind(this);
+    this.acceptResult3 = this.acceptResult3.bind(this);
+    this.acceptResult4 = this.acceptResult4.bind(this);
   }
 
   getCardSize(cards) {
@@ -38,9 +41,10 @@ class TestPandoerTable extends React.Component {
     this.props.moves.pass();
   }
 
-  acceptResult(event) {
-    this.props.moves.acceptResult();
-  }
+  acceptResult1() { this.props.moves.acceptResult(0); }
+  acceptResult2() { this.props.moves.acceptResult(1); }
+  acceptResult3() { this.props.moves.acceptResult(2); }
+  acceptResult4() { this.props.moves.acceptResult(3); }
 
   play(key) {
     console.log('clicked on card in hand: ' + key);
@@ -100,6 +104,7 @@ class TestPandoerTable extends React.Component {
       if (that.props.ctx.phase === 'countPoints') {
         let extraInfo1 = '';
         let extraInfo2 = '';
+
         if (that.props.G.attackingTeam === 0) {
           extraInfo1 = ' waarvan ' + (that.props.G.playersKnownInfo['0'].announcementScore + that.props.G.playersKnownInfo['2'].announcementScore) + ' toon';
         } else {
@@ -130,7 +135,10 @@ class TestPandoerTable extends React.Component {
                   onClick={() => {}}></Hand>
           </div>
           <div>
-            <button onClick={that.acceptResult}>Ok, verder spelen</button>
+            <button onClick={that.acceptResult1}>Accept player 1</button>
+            <button onClick={that.acceptResult2}>Accept player 2</button>
+            <button onClick={that.acceptResult3}>Accept player 3</button>
+            <button onClick={that.acceptResult4}>Accept player 4</button>
           </div>
           <div>
             {that.props.G.playersKnownInfo[0].name}: {that.props.G.playersKnownInfo[0].hasAcceptedResult ? 'geaccepteerd' : 'moet nog accepteren'}<br/>
