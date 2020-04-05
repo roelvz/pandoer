@@ -2,12 +2,9 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, removeRanksForSuit, r
 
 // TODO: namen van spelers
 // TODO: pandoer (op tafel)
-// TODO: slagen tellen / score tonen
 // TODO: non-random order
 // TODO: validate announcement (niet teveel laten zien)
-// TODO: laatste slag tonen
 // TODO: bug: aantal slagen na ronde 1 staat op 1 (fix without workaround)
-// TODO: handen tonen op het einde
 // TODO: AI
 
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
@@ -19,6 +16,18 @@ function getPlayerTeam(player) {
 
 function isLegalShoutValue(value) {
   return value !== undefined && value >= 200 && value % 10 === 0;
+}
+
+function shouldShout(G, ctx, playerId) {
+  return G.playersKnownInfo[playerId].passed === false && G.playersKnownInfo[playerId].shout === undefined
+}
+
+function someoneShoutedPandoer(G) {
+  return Object.keys(G.playersKnownInfo).filter(k => G.playersKnownInfo[k].shoutedPandoer).length > 0;
+}
+
+function someoneShoutedPandoerOnTable(G) {
+  return Object.keys(G.playersKnownInfo).filter(k => G.playersKnownInfo[k].shoutedPandoerOnTable).length > 0;
 }
 
 function isLegalPlay(G, ctx, card) {
@@ -349,4 +358,5 @@ function resetTheGame(G) {
 }
 
 export { startScore, getCardScore, getCardsScore, getAnnouncementScore, shouldAnnounce, isLegalPlay, getPlayerId,
-  getTeamMatePlayerId, isLegalShoutValue, isCard1HigherThanCard2, getPlayerTeam, resetTheGame }
+  getTeamMatePlayerId, isLegalShoutValue, isCard1HigherThanCard2, getPlayerTeam, resetTheGame, someoneShoutedPandoer,
+  someoneShoutedPandoerOnTable, shouldShout }

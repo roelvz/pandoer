@@ -1,6 +1,7 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { startScore, resetTheGame, isLegalShoutValue, shouldAnnounce, isLegalPlay, getAnnouncementScore,
-  isCard1HigherThanCard2, getPlayerTeam, getCardsScore } from "./pandoerRules";
+  isCard1HigherThanCard2, getPlayerTeam, getCardsScore, someoneShoutedPandoer,
+  someoneShoutedPandoerOnTable, shouldShout } from "./pandoerRules";
 import { initDeck, dealCards, containsCard, removeCard, areCardsEqual, sortCards } from "./cardUtils";
 
 
@@ -199,6 +200,8 @@ function createPandoerGame(playerView) {
 
           shout(G, ctx, value) {
             if (isLegalShoutValue(value) &&
+                !someoneShoutedPandoer(G) && !someoneShoutedPandoerOnTable(G) &&
+                shouldShout(G, ctx, ctx.currentPlayer) &&
                 (G.highestShoutingPlayer === undefined || value > G.playersKnownInfo[G.highestShoutingPlayer].shout)) {
               // player has shouted the highest so far
               G.highestShoutingPlayer = ctx.currentPlayer;
@@ -216,7 +219,8 @@ function createPandoerGame(playerView) {
           },
 
           pandoer(G, ctx) {
-            if (Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].shoutedPandoer).length === 0) {
+            if (!someoneShoutedPandoer(G)) {
+              G.shout = 500;
               G.playersKnownInfo[ctx.currentPlayer].shoutedPandoer = true;
               G.highestShoutingPlayer = ctx.currentPlayer;
             } else {
@@ -225,7 +229,8 @@ function createPandoerGame(playerView) {
           },
 
           pandoerOnTable(G, ctx) {
-            if (Object.keys(G.playersKnownInfo).filter(key => G.playersKnownInfo[key].shoutedPandoerOnTable).length === 0) {
+            if (!someoneShoutedPandoerOnTable(G)) {
+              G.shout = 500;
               G.playersKnownInfo[ctx.currentPlayer].shoutedPandoerOnTable = true;
               G.highestShoutingPlayer = ctx.currentPlayer;
             } else {

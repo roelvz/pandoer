@@ -1,6 +1,6 @@
 import React from 'react';
 import { cidToCard, cardToCid, cardsToCid, suitInDutch } from './cardUtils';
-import { shouldAnnounce, getPlayerId, getTeamMatePlayerId } from './pandoerRules';
+import { shouldAnnounce, getPlayerId, getTeamMatePlayerId, shouldShout } from './pandoerRules';
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 
@@ -122,6 +122,17 @@ class PandoerTable extends React.Component {
       }
     }
 
+    function getAnnouncementForm(that) {
+      if (shouldShout(that.props.G, that.props.ctx, that.getId())) {
+        return <div>
+          <input onChange={that.handleChange}/><button onClick={that.shout}>Roepen</button>
+          <button onClick={that.pass}>Pas</button>
+          <button>Pandoer kletsen</button>
+          <button>Pandoer op tafel</button>
+        </div>
+      }
+    }
+
     function getAnnouncement(that) {
       let playerId;
       let button;
@@ -135,8 +146,6 @@ class PandoerTable extends React.Component {
         return;
       }
       let otherPlayerId = getTeamMatePlayerId(playerId);
-      console.log(playerId);
-      console.log(otherPlayerId);
       let otherPlayerHand;
       let score = that.props.G.playersKnownInfo[playerId].announcementScore;
       let scoreString = score.toString();
@@ -239,9 +248,8 @@ class PandoerTable extends React.Component {
         return getCountPhaseInfo(that);
       } else {
         return <div>Speler aan beurt: {that.props.G.playersKnownInfo[that.props.ctx.currentPlayer.toString()].name}<br/><br/>
-          <input onChange={that.handleChange}/><button onClick={that.shout}>Roepen</button><button onClick={that.pass}>Pas</button><br/><br/>
-
-          Roepen:<br/>
+          {getAnnouncementForm(that)}
+          Geroepen:<br/>
           {that.props.G.playersKnownInfo[0].name}: {that.props.G.playersKnownInfo[0].shout || (that.props.G.playersKnownInfo[0].passed ? 'pas' : 'niet geroepen')}<br/>
           {that.props.G.playersKnownInfo[1].name}: {that.props.G.playersKnownInfo[1].shout || (that.props.G.playersKnownInfo[1].passed ? 'pas' : 'niet geroepen')}<br/>
           {that.props.G.playersKnownInfo[2].name}: {that.props.G.playersKnownInfo[2].shout || (that.props.G.playersKnownInfo[2].passed ? 'pas' : 'niet geroepen')}<br/>
