@@ -60,7 +60,7 @@ class TestPandoerTable extends React.Component {
   }
 
   simulate() {
-    if (this.props.G.players[this.props.ctx.currentPlayer].hand.length === 1) {
+    if (Object.keys(this.props.G.players).filter(key => this.props.G.players[key].hand.length === 0).length === 3) {
       return;
     }
 
@@ -72,6 +72,9 @@ class TestPandoerTable extends React.Component {
       }
     } else {
       if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
+        for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
+          this.props.moves.addCardToAnnouncement(card);
+        }
         this.props.moves.announce();
       } else {
         for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
