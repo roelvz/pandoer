@@ -161,31 +161,44 @@ class PandoerTable extends React.Component {
 
     function getCountPhaseInfo(that) {
       if (that.props.ctx.phase === 'countPoints') {
-        let extraInfo1 = '';
-        let extraInfo2 = '';
-        if (that.props.G.attackingTeam === 0) {
-          extraInfo1 = ' waarvan ' + (that.props.G.playersKnownInfo['0'].announcementScore + that.props.G.playersKnownInfo['2'].announcementScore) + ' toon';
-        } else {
-          extraInfo2 = ' waarvan ' + (that.props.G.playersKnownInfo['1'].announcementScore + that.props.G.playersKnownInfo['3'].announcementScore) + ' toon';
-        }
+        let info1;
+        let info2;
 
         let winner;
-        if (that.props.G.roundScore[0] > that.props.G.roundScore[1]) {
-          winner = <h1>Team 1 is gewonnen</h1>
+        if (that.props.G.attackingTeam === 0) {
+          let shoutScore = that.props.G.playersKnownInfo[0].passed ? 0 : that.props.G.playersKnownInfo[0].shout;
+          shoutScore += that.props.G.playersKnownInfo[2].passed ? 0 : that.props.G.playersKnownInfo[2].shout;
+          let announcementScore = that.props.G.playersKnownInfo[0].announcementScore + that.props.G.playersKnownInfo[2].announcementScore;
+          info1 = 'Team 1 heeft ' + shoutScore + ' geroepen, heeft ' + announcementScore + ' getoond en haalde ' + (that.props.G.roundScore[0] - announcementScore) + ' punten';
+          info2 = 'Team 2 haalde ' + that.props.G.roundScore[1] + ' punten';
+          if (that.props.G.roundScore[0] >= shoutScore) {
+            winner = <h1>Team 1 is gewonnen</h1>
+          } else {
+            winner = <h1>Team 2 is gewonnen</h1>
+          }
         } else {
-          winner = <h1>Team 2 is gewonnen</h1>
+          let shoutScore = that.props.G.playersKnownInfo[1].passed ? 0 : that.props.G.playersKnownInfo[1].shout;
+          shoutScore += that.props.G.playersKnownInfo[3].passed ? 0 : that.props.G.playersKnownInfo[3].shout;
+          let announcementScore = that.props.G.playersKnownInfo[1].announcementScore + that.props.G.playersKnownInfo[3].announcementScore;
+          info1 = 'Team 1 haalde ' + that.props.G.roundScore[0] + ' punten';
+          info2 = 'Team 2 heeft ' + shoutScore + ' geroepen, heeft ' + announcementScore + ' getoond en haalde ' + (that.props.G.roundScore[1] - announcementScore) + ' punten';
+          if (that.props.G.roundScore[0] >= shoutScore) {
+            winner = <h1>Team 2 is gewonnen</h1>
+          } else {
+            winner = <h1>Team 1 is gewonnen</h1>
+          }
         }
 
         return <div>
           {winner}
-          Team 1 heeft {that.props.G.roundScore[0]} punten{extraInfo1}:
+          {info1}:
           <div style={handStyle}>
             <Hand hide={false} layout={"fan"}
                   cards={cardsToCid(that.props.G.tricks[0].flat())}
                   cardSize={that.getCardSize(cardsToCid(that.props.G.tricks[0].flat()))}
                   onClick={() => {}}></Hand>
           </div>
-          Team 2 heeft {that.props.G.roundScore[1]} punten{extraInfo2}:
+          {info2}
           <div style={handStyle}>
             <Hand hide={false} layout={"fan"}
                   cards={cardsToCid(that.props.G.tricks[1].flat())}
@@ -193,7 +206,10 @@ class PandoerTable extends React.Component {
                   onClick={() => {}}></Hand>
           </div>
           <div>
-            <button onClick={that.acceptResult}>Ok, verder spelen</button>
+            <button onClick={that.acceptResult1}>Accept player 1</button>
+            <button onClick={that.acceptResult2}>Accept player 2</button>
+            <button onClick={that.acceptResult3}>Accept player 3</button>
+            <button onClick={that.acceptResult4}>Accept player 4</button>
           </div>
           <div>
             {that.props.G.playersKnownInfo[0].name}: {that.props.G.playersKnownInfo[0].hasAcceptedResult ? 'geaccepteerd' : 'moet nog accepteren'}<br/>

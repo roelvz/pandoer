@@ -395,9 +395,6 @@ function createPandoerGame(playerView) {
 
           for (const key of Object.keys(G.playersKnownInfo)) {
             G.playersKnownInfo[key].hasPlayedCard = false;
-            // Clear shouts (does not happen after shout phase because we need this info in the play phase)
-            G.playersKnownInfo[key].shout = undefined;
-            G.playersKnownInfo[key].passed = false;
           }
           G.highestShoutingPlayer = undefined;
           G.lastAnnouncingPlayer = undefined;
@@ -431,7 +428,6 @@ function createPandoerGame(playerView) {
             for (const key of Object.keys(G.playersKnownInfo)) {
               G.playersKnownInfo[key].hasAnnounced = false;
               G.playersKnownInfo[key].announcement = [];
-              G.playersKnownInfo[key].announcementScore = 0;
               G.playersKnownInfo[key].lastPlayedCard = undefined;
               G.playersKnownInfo[key].lastPlayedCardInAnnouncement = false;
             }
@@ -458,6 +454,9 @@ function createPandoerGame(playerView) {
         onEnd(G, ctx) {
           Object.keys(G.playersKnownInfo).forEach(key => {
             G.playersKnownInfo[key].hasAcceptedResult = false;
+            G.playersKnownInfo[key].announcementScore = 0;
+            G.playersKnownInfo[key].shout = undefined;
+            G.playersKnownInfo[key].passed = false;
           });
           G.attackingTeam = undefined;
           G.roundScore = [0, 0];
