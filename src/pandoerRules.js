@@ -1,5 +1,4 @@
-import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, dealCards, removeCard, removeRanksForSuit,
-  removeSuitsForRank, containsCard, sortCards, areCardsEqual } from "./cardUtils";
+import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, removeRanksForSuit, removeSuitsForRank } from "./cardUtils";
 
 // TODO: namen van spelers
 // TODO: pandoer (op tafel)

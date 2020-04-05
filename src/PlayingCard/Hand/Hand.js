@@ -82,8 +82,8 @@ class Hand extends Component {
         }
     }
     fanStyle(num) {
-        console.log("handlenght", this.handLength);
-        console.log("num", num)
+        // console.log("handlenght", this.handLength);
+        // console.log("num", num)
         let overHalf = num > (this.handLength - 1) / 2;
         if (false && process.env.NODE_ENV !== "production") {
             console.log('degs', this.degs);

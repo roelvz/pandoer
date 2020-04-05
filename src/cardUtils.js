@@ -234,6 +234,7 @@ function suitInDutch(suit) {
     case CLUBS: return 'Klaveren';
     case DIAMONDS: return 'Ruiten';
     case SPADES: return 'Schoppen';
+    default: return '';
   }
 }
 
