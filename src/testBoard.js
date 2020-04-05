@@ -1,6 +1,6 @@
 import React from 'react';
 import { cardToString, cidToCard, cardToCid, cardsToCid } from './cardUtils';
-import { shouldAnnounce, isLegalPlay } from './game';
+import { shouldAnnounce, isLegalPlay } from './pandoerRules';
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 

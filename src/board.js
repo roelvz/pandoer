@@ -1,6 +1,6 @@
 import React from 'react';
 import { cidToCard, cardToCid, cardsToCid, suitInDutch } from './cardUtils';
-import { shouldAnnounce, isLegalPlay, getPlayerId, getTeamMatePlayerId } from './game';
+import { shouldAnnounce, getPlayerId, getTeamMatePlayerId } from './pandoerRules';
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 
