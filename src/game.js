@@ -4,7 +4,6 @@ import { startScore, resetTheGame, isLegalShoutValue, shouldAnnounce, isLegalPla
   someoneShoutedPandoerOnTable, shouldShout, canShout } from "./pandoerRules";
 import { initDeck, dealCards, containsCard, removeCard, areCardsEqual, sortCards } from "./cardUtils";
 
-
 function createPandoerGame(playerView) {
   return {
     setup: () => ({
@@ -230,6 +229,13 @@ function createPandoerGame(playerView) {
               G.playersKnownInfo[ctx.currentPlayer].shout = 500;
               G.playersKnownInfo[ctx.currentPlayer].shoutedPandoerOnTable = true;
               G.highestShoutingPlayer = ctx.currentPlayer;
+
+              Object.keys(G.playersKnownInfo).forEach(key => {
+                const player = G.playersKnownInfo[key];
+                if (player.shout === undefined && !player.passed) {
+                  player.passed = true;
+                }
+              });
             } else {
               return INVALID_MOVE;
             }
