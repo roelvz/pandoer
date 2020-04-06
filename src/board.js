@@ -1,6 +1,14 @@
 import React from 'react';
 import { cidToCard, cardToCid, cardsToCid, suitInDutch } from './cardUtils';
-import { shouldAnnounce, getPlayerId, getTeamMatePlayerId, shouldShout } from './pandoerRules';
+import {
+  shouldAnnounce,
+  getPlayerId,
+  getTeamMatePlayerId,
+  shouldShout,
+  canShout,
+  someoneShoutedPandoer,
+  someoneShoutedPandoerOnTable,
+} from './pandoerRules';
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 
@@ -17,6 +25,8 @@ class PandoerTable extends React.Component {
     this.removeCard = this.removeCard.bind(this);
     this.shout = this.shout.bind(this);
     this.pass = this.pass.bind(this);
+    this.pandoer = this.pandoer.bind(this);
+    this.pandoerOnTable = this.pandoerOnTable.bind(this);
     this.getId = this.getId.bind(this);
     this.announce = this.announce.bind(this);
     this.acceptResult = this.acceptResult.bind(this);
@@ -39,6 +49,14 @@ class PandoerTable extends React.Component {
 
   pass(event) {
     this.props.moves.pass();
+  }
+
+  pandoer(event) {
+    this.props.moves.pandoer();
+  }
+
+  pandoerOnTable(event) {
+    this.props.moves.pandoerOnTable();
   }
 
   announce() {
@@ -125,47 +143,54 @@ class PandoerTable extends React.Component {
     function getAnnouncementForm(that) {
       if (shouldShout(that.props.G, that.props.ctx, that.getId())) {
         return <div>
-          <input onChange={that.handleChange}/><button onClick={that.shout}>Roepen</button>
+          <input onChange={that.handleChange}/>
+          <button disabled={!canShout(that.props.G, that.props.ctx, that.state.shoutValue)} onClick={that.shout}>Roepen</button>
           <button onClick={that.pass}>Pas</button>
-          <button>Pandoer kletsen</button>
-          <button>Pandoer op tafel</button>
+          <button disabled={someoneShoutedPandoer(that.props.G)} onClick={that.pandoer}>Pandoer kletsen</button>
+          <button disabled={someoneShoutedPandoerOnTable(that.props.G)} onClick={that.pandoerOnTable}>Pandoer op tafel</button>
         </div>
       }
     }
 
     function getAnnouncement(that) {
-      let playerId;
-      let button;
-      const thisPlayerShouldAnnounce = shouldAnnounce(that.props.G, that.props.ctx, that.getId());
-      if (thisPlayerShouldAnnounce) {
-        playerId = that.getId();
-        button = <button onClick={that.announce}>Tonen</button>
-      } else if (that.props.G.lastAnnouncingPlayer && that.props.G.playersKnownInfo[that.props.G.lastAnnouncingPlayer].hasAnnounced) {
-        playerId = that.props.G.lastAnnouncingPlayer;
-      } else {
-        return;
+      if (!someoneShoutedPandoer(that.props.G) && !(someoneShoutedPandoerOnTable(that.props.G))) {
+        let playerId;
+        let button;
+        const thisPlayerShouldAnnounce = shouldAnnounce(that.props.G, that.props.ctx, that.getId());
+        if (thisPlayerShouldAnnounce) {
+          playerId = that.getId();
+          button = <button onClick={that.announce}>Tonen</button>
+        } else if (that.props.G.lastAnnouncingPlayer && that.props.G.playersKnownInfo[that.props.G.lastAnnouncingPlayer].hasAnnounced) {
+          playerId = that.props.G.lastAnnouncingPlayer;
+        } else {
+          return;
+        }
+        let otherPlayerId = getTeamMatePlayerId(playerId);
+        let otherPlayerHand;
+        let score = that.props.G.playersKnownInfo[playerId].announcementScore;
+        let scoreString = score.toString();
+        if (that.props.G.playersKnownInfo[otherPlayerId].hasAnnounced) {
+          otherPlayerHand = <Hand hide={false}
+                                  layout={that.state.layout}
+                                  cards={cardsToCid(that.props.G.playersKnownInfo[otherPlayerId].announcement)}
+                                  cardSize={that.getCardSize(cardsToCid(that.props.G.playersKnownInfo[otherPlayerId].announcement))}
+                                  onClick={() => {
+                                  }}/>;
+          let otherScore = that.props.G.playersKnownInfo[otherPlayerId].announcementScore;
+          score += otherScore;
+          scoreString += ` + ${otherScore} = ${score}`;
+        }
+        return <div style={handStyle}>
+          Toon:
+          <Hand hide={false}
+                layout={that.state.layout}
+                cards={cardsToCid(that.props.G.playersKnownInfo[playerId].announcement)}
+                cardSize={that.getCardSize(cardsToCid(that.props.G.playersKnownInfo[playerId].announcement))}
+                onClick={that.removeCard}/>
+          {otherPlayerHand}
+          Score: {scoreString}{button}
+        </div>
       }
-      let otherPlayerId = getTeamMatePlayerId(playerId);
-      let otherPlayerHand;
-      let score = that.props.G.playersKnownInfo[playerId].announcementScore;
-      let scoreString = score.toString();
-      if (that.props.G.playersKnownInfo[otherPlayerId].hasAnnounced) {
-        otherPlayerHand = <Hand hide={false}
-                                layout={that.state.layout}
-                                cards={cardsToCid(that.props.G.playersKnownInfo[otherPlayerId].announcement)}
-                                cardSize={that.getCardSize(cardsToCid(that.props.G.playersKnownInfo[otherPlayerId].announcement))} onClick={() => {}}/>
-        let otherScore = that.props.G.playersKnownInfo[otherPlayerId].announcementScore;
-        score += otherScore;
-        scoreString += ` + ${otherScore} = ${score}`;
-      }
-      return <div style={handStyle}>
-        <Hand hide={false}
-              layout={that.state.layout}
-              cards={cardsToCid(that.props.G.playersKnownInfo[playerId].announcement)}
-              cardSize={that.getCardSize(cardsToCid(that.props.G.playersKnownInfo[playerId].announcement))} onClick={that.removeCard}/>
-        {otherPlayerHand}
-        Score: {scoreString}{button}
-      </div>
     }
 
     function getCountPhaseInfo(that) {
@@ -243,6 +268,21 @@ class PandoerTable extends React.Component {
       }
     }
 
+    function getPlayerShoutString(player) {
+      let str = '';
+      if (player.shoutedPandoerOnTable) {
+        str = 'Pandoer op tafel!'
+      } else if (player.shoutedPandoer) {
+        str = 'Pandoer!'
+      } else  {
+        str = player.shout || (player.passed ? 'pas' : 'niet geroepen')
+      }
+
+      return <div>
+        {player.name}: {str}<br/>
+      </div>
+    }
+
     function getMain(that) {
       if (that.props.ctx.phase === 'countPoints') {
         return getCountPhaseInfo(that);
@@ -250,10 +290,10 @@ class PandoerTable extends React.Component {
         return <div>Speler aan beurt: {that.props.G.playersKnownInfo[that.props.ctx.currentPlayer.toString()].name}<br/><br/>
           {getAnnouncementForm(that)}
           Geroepen:<br/>
-          {that.props.G.playersKnownInfo[0].name}: {that.props.G.playersKnownInfo[0].shout || (that.props.G.playersKnownInfo[0].passed ? 'pas' : 'niet geroepen')}<br/>
-          {that.props.G.playersKnownInfo[1].name}: {that.props.G.playersKnownInfo[1].shout || (that.props.G.playersKnownInfo[1].passed ? 'pas' : 'niet geroepen')}<br/>
-          {that.props.G.playersKnownInfo[2].name}: {that.props.G.playersKnownInfo[2].shout || (that.props.G.playersKnownInfo[2].passed ? 'pas' : 'niet geroepen')}<br/>
-          {that.props.G.playersKnownInfo[3].name}: {that.props.G.playersKnownInfo[3].shout || (that.props.G.playersKnownInfo[3].passed ? 'pas' : 'niet geroepen')}<br/><br/>
+          {getPlayerShoutString(that.props.G.playersKnownInfo[0])}
+          {getPlayerShoutString(that.props.G.playersKnownInfo[1])}
+          {getPlayerShoutString(that.props.G.playersKnownInfo[2])}
+          {getPlayerShoutString(that.props.G.playersKnownInfo[3])}<br/>
 
           {/*Attacking team: {that.props.G.attackingTeam}<br/>*/}
           Team 1: Aantal slagen: {that.props.G.tricks[0].length} {that.props.G.attackingTeam === undefined ? '' : (that.props.G.attackingTeam === 0 ? '(de goei)' : '(de slechte)')}<br/>
@@ -271,10 +311,7 @@ class PandoerTable extends React.Component {
           <br/>
           <div>
             Uw laatst gespeelde kaart: {showLastPlayedCard(that, that.props.G.playersKnownInfo[that.getId()].lastPlayedCard)}
-            <div>
-              Toon:
-              {getAnnouncement(that)}<br/><br/>
-            </div>
+            {getAnnouncement(that)}
 
             <div>
               {getLastTrick(that)}

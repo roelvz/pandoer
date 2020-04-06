@@ -30,6 +30,13 @@ function someoneShoutedPandoerOnTable(G) {
   return Object.keys(G.playersKnownInfo).filter(k => G.playersKnownInfo[k].shoutedPandoerOnTable).length > 0;
 }
 
+function canShout(G, ctx, value) {
+  return isLegalShoutValue(value) &&
+      !someoneShoutedPandoer(G) && !someoneShoutedPandoerOnTable(G) &&
+      shouldShout(G, ctx, ctx.currentPlayer) &&
+      (G.highestShoutingPlayer === undefined || value > G.playersKnownInfo[G.highestShoutingPlayer].shout);
+}
+
 function isLegalPlay(G, ctx, card) {
   return (
       // any card can be played if trump has not been chosen yet (this card's suit will become trump)
@@ -237,6 +244,9 @@ function getAnnouncementScore(cards, trump, ignoreMarriage = false) {
 }
 
 function shouldAnnounce(G, ctx, playerId) {
+  if (someoneShoutedPandoer(G) || someoneShoutedPandoerOnTable(G)) {
+    return false;
+  }
   const hasAnnounced = G.playersKnownInfo[playerId].hasAnnounced;
   const isPartOfAttackingTeam = getPlayerTeam(playerId) === G.attackingTeam;
   const oneTrickHasBeenPlayed = G.tricks[0].length + G.tricks[1].length === 1;
@@ -359,4 +369,4 @@ function resetTheGame(G) {
 
 export { startScore, getCardScore, getCardsScore, getAnnouncementScore, shouldAnnounce, isLegalPlay, getPlayerId,
   getTeamMatePlayerId, isLegalShoutValue, isCard1HigherThanCard2, getPlayerTeam, resetTheGame, someoneShoutedPandoer,
-  someoneShoutedPandoerOnTable, shouldShout }
+  someoneShoutedPandoerOnTable, shouldShout, canShout }
