@@ -10,7 +10,7 @@ import { Suits, HEARTS, DIAMONDS, CLUBS, SPADES, initDeck, removeRanksForSuit, r
 const startScore = 25; // both teams start at 25 on the scoreBoard (den boom)
 const trumpRankOrder = [10,12,13,14,9,11];
 
-function getPlayerTeam(player) {
+function getPlayerTeam(G, player) {
   return player % 2 === 0 ? 0 : 1;
 }
 
@@ -248,7 +248,7 @@ function shouldAnnounce(G, ctx, playerId) {
     return false;
   }
   const hasAnnounced = G.playersKnownInfo[playerId].hasAnnounced;
-  const isPartOfAttackingTeam = getPlayerTeam(playerId) === G.attackingTeam;
+  const isPartOfAttackingTeam = getPlayerTeam(G, playerId) === G.attackingTeam;
   const oneTrickHasBeenPlayed = G.tricks[0].length + G.tricks[1].length === 1;
   return (playerId === ctx.currentPlayer) && !hasAnnounced && isPartOfAttackingTeam && oneTrickHasBeenPlayed;
 }

@@ -1,8 +1,10 @@
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { startScore, resetTheGame, isLegalShoutValue, shouldAnnounce, isLegalPlay, getAnnouncementScore,
-  isCard1HigherThanCard2, getPlayerTeam, getCardsScore, someoneShoutedPandoer,
-  someoneShoutedPandoerOnTable, shouldShout, canShout } from "./pandoerRules";
+import { startScore, resetTheGame,  shouldAnnounce, isLegalPlay, getAnnouncementScore, isCard1HigherThanCard2,
+  getPlayerTeam, getCardsScore, someoneShoutedPandoer, someoneShoutedPandoerOnTable, canShout } from "./pandoerRules";
 import { initDeck, dealCards, containsCard, removeCard, areCardsEqual, sortCards } from "./cardUtils";
+
+// TODO: show win/lose on end of game
+// TODO: pandoer op tafel: end if higher card is played
 
 function createPandoerGame(playerView) {
   return {
@@ -12,6 +14,9 @@ function createPandoerGame(playerView) {
       deck: initDeck(),
       // Represents all cards on the table
       table: [],
+      // Set in Pandoer (on table) was lost
+      pandoerLost: false,
+      countedScores: false,
 
       // The score for 1 round of playing
       roundScore: [0, 0],
@@ -110,7 +115,7 @@ function createPandoerGame(playerView) {
     playerView: playerView ? playerView : (G, ctx, playerID) => { return G },
 
     endIf(G, ctx) {
-      return G.scoreBoard[0] <= 0 || G.scoreBoard[1] <= 0;
+      return G.countedScores && (G.scoreBoard[0] <= 0 || G.scoreBoard[1] <= 0);
     },
 
     turn: {
@@ -256,7 +261,7 @@ function createPandoerGame(playerView) {
         },
 
         onEnd(G, ctx) {
-          G.attackingTeam = getPlayerTeam(G.highestShoutingPlayer);
+          G.attackingTeam = getPlayerTeam(G, G.highestShoutingPlayer);
           G.roundShout = G.playersKnownInfo[G.highestShoutingPlayer].shout;
           G.dealer++;
           G.dealer %= ctx.numPlayers;
@@ -341,7 +346,7 @@ function createPandoerGame(playerView) {
           announce(G, ctx) {
             if (shouldAnnounce(G, ctx, ctx.currentPlayer)) {
               G.playersKnownInfo[ctx.currentPlayer].hasAnnounced = true;
-              G.roundScore[getPlayerTeam(ctx.currentPlayer)] += G.playersKnownInfo[ctx.currentPlayer].announcementScore;
+              G.roundScore[getPlayerTeam(G, ctx.currentPlayer)] += G.playersKnownInfo[ctx.currentPlayer].announcementScore;
               for (const card of G.playersKnownInfo[ctx.currentPlayer].announcement) {
                 if (G.playersKnownInfo[ctx.currentPlayer].lastPlayedCardInAnnouncement && areCardsEqual(card, G.playersKnownInfo[ctx.currentPlayer].lastPlayedCard)) {
                   G.playersKnownInfo[ctx.currentPlayer].lastPlayedCardInAnnouncement = false;
@@ -367,13 +372,24 @@ function createPandoerGame(playerView) {
 
         endIf(G, ctx) {
           // end phase if four cards are on the table
-          return G.table.length === 4 || G.resigningPlayer !== undefined;
+          let result = G.table.length === 4 || G.resigningPlayer !== undefined;
+          return result;
         },
 
         onEnd(G, ctx) {
           if (G.playPhaseEnded) {
             G.playPhaseEnded = false;
             return G;
+          }
+
+          let winningTeam = getPlayerTeam(G, G.playerWithHighestCardOnTable);
+
+          // Pandoer game is lost from the moment one trick is lost
+          if (someoneShoutedPandoer(G) || someoneShoutedPandoerOnTable(G)) {
+            if (G.playerWithHighestCardOnTable !== G.highestShoutingPlayer) {
+              // Pandoer lost!
+              G.pandoerLost = true;
+            }
           }
 
           // No need to count store if someone has resigned
@@ -383,13 +399,16 @@ function createPandoerGame(playerView) {
               G.players[k].hand = [];
             })
           } else {
-            let winningTeam = getPlayerTeam(G.playerWithHighestCardOnTable);
+            if (!G.pandoerLost) {
+              // Add score to winning team
+              G.roundScore[winningTeam] += getCardsScore(G.trump, G.table);
 
-            // Add score to winning team
-            G.roundScore[winningTeam] += getCardsScore(G.trump, G.table);
-
-            // Add tricks from table to winning team
-            G.tricks[winningTeam].push(G.table);
+              // Add tricks from table to winning team
+              G.tricks[winningTeam].push(G.table);
+            } else {
+              const otherTeam = G.attackingTeam === 0 ? 1 : 0;
+              G.tricks[otherTeam].push(G.table);
+            }
             G.lastTrick = G.table;
           }
 
@@ -398,24 +417,28 @@ function createPandoerGame(playerView) {
 
           // Clear play info
           G.highestCardOnTable = undefined;
-          G.playerWhoWonPreviousTrick = G.playerWithHighestCardOnTable;
-          G.playerWithHighestCardOnTable = undefined;
-
           for (const key of Object.keys(G.playersKnownInfo)) {
             G.playersKnownInfo[key].hasPlayedCard = false;
           }
-          G.highestShoutingPlayer = undefined;
           G.lastAnnouncingPlayer = undefined;
+          G.playerWhoWonPreviousTrick = G.playerWithHighestCardOnTable;
+          G.playerWithHighestCardOnTable = undefined;
 
           // No player has any cards left, it's the end of the round, count score.
-          if (G.players[0].hand.length === 0) {
+          if (G.players[0].hand.length === 0 || G.pandoerLost) {
             const otherTeam = G.attackingTeam === 0 ? 1 : 0;
-            const score = ~~(G.roundShout / 50);
+            let score = ~~(G.roundShout / 50);
+            if (someoneShoutedPandoer(G)) {
+              score = 10;
+            } else if (someoneShoutedPandoerOnTable(G)) {
+              // Score to 0 in case of Pandoer on table
+              score = G.scoreBoard[G.pandoerLost ? otherTeam : G.attackingTeam];
+            }
 
-            let attackingTeamWon = G.roundScore[G.attackingTeam] - G.roundShout > G.roundScore[otherTeam];
+            let attackingTeamWon = !G.pandoerLost && G.roundScore[G.attackingTeam] - G.roundShout > G.roundScore[otherTeam];
 
             if (G.resigningPlayer !== undefined) {
-              const resigningTeam = getPlayerTeam(G.resigningPlayer);
+              const resigningTeam = getPlayerTeam(G, G.resigningPlayer);
               attackingTeamWon = resigningTeam !== G.attackingTeam;
             }
 
@@ -440,8 +463,9 @@ function createPandoerGame(playerView) {
               G.playersKnownInfo[key].lastPlayedCardInAnnouncement = false;
             }
 
-            // initiate deck again so that it can be dealt the beginning of the next turn
             G.playPhaseEnded = true;
+
+            G.countedScores = false;
             ctx.events.setPhase('countPoints');
           }
 
@@ -465,12 +489,19 @@ function createPandoerGame(playerView) {
             G.playersKnownInfo[key].announcementScore = 0;
             G.playersKnownInfo[key].shout = undefined;
             G.playersKnownInfo[key].passed = false;
+            G.playersKnownInfo[key].shoutedPandoer = false;
+            G.playersKnownInfo[key].shoutedPandoerOnTable = false;
+            // Necessary in case of a lost pandoer
+            G.players[key].hand = [];
           });
+          G.highestShoutingPlayer = undefined;
           G.attackingTeam = undefined;
           G.roundScore = [0, 0];
           G.tricks[0] = [];
           G.tricks[1] = [];
+          // initiate deck again so that it can be dealt the beginning of the next turn
           G.deck = initDeck();
+          G.countedScores = true;
         },
 
         turn: {
