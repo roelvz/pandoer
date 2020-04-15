@@ -48,16 +48,16 @@ function Mat(props) {
           <Grid item xs={3}/>
           <Grid item xs={6}>
             <div className={classes.horizontalHand}>
-            {props.topCard &&
-            <PlayingCard card={props.topCard} height={100} onClick={() => {}}/>
+            {props.cards.topCard &&
+            <PlayingCard card={props.cards.topCard} height={100} onClick={() => {}}/>
             }
             </div>
           </Grid>
           <Grid item xs={3}/>
           <Grid item xs={3}>
             <div className={classes.verticalHand}>
-              {props.leftCard &&
-              <PlayingCard card={props.leftCard} height={100} onClick={() => {}}/>
+              {props.cards.leftCard &&
+              <PlayingCard card={props.cards.leftCard} height={100} onClick={() => {}}/>
               }
             </div>
           </Grid>
@@ -66,16 +66,16 @@ function Mat(props) {
           </Grid>
           <Grid item xs={3}>
             <div className={classes.verticalHand}>
-              {props.rightCard &&
-              <PlayingCard card={props.rightCard} height={100} onClick={() => {}}/>
+              {props.cards.rightCard &&
+              <PlayingCard card={props.cards.rightCard} height={100} onClick={() => {}}/>
               }
             </div>
           </Grid>
           <Grid item xs={3}/>
           <Grid item xs={6}>
             <div className={classes.horizontalHand}>
-            {props.bottomCard &&
-            <PlayingCard card={props.bottomCard} height={100} onClick={() => {}}/>
+            {props.cards.bottomCard &&
+            <PlayingCard card={props.cards.bottomCard} height={100} onClick={() => {}}/>
             }
             </div>
           </Grid>

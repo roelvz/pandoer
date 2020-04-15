@@ -1,5 +1,7 @@
 import React from 'react';
+import Paper from '@material-ui/core/Paper';
 import { CardTable } from './table'
+import { PlayingHand } from "./playingHand";
 import { cidToCard, cardToCid, cardsToCid, suitInDutch } from './cardUtils';
 import {
   shouldAnnounce,
@@ -12,6 +14,39 @@ import {
 } from './pandoerRules';
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
+import Grid from "@material-ui/core/Grid";
+import {makeStyles} from "@material-ui/core/styles";
+
+const classes = makeStyles((theme) => ({
+  container: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(12, 1fr)',
+    gridGap: theme.spacing(3),
+  },
+  paper: {
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+    whiteSpace: 'nowrap',
+    marginBottom: theme.spacing(1),
+  },
+  playingCard: {
+    float: 'left',
+    minWidth: '75px',
+  },
+  table: {
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+    whiteSpace: 'nowrap',
+    marginBottom: theme.spacing(1),
+    minHeight: '800px',
+    minWidth: '800px',
+  },
+  divider: {
+    margin: theme.spacing(2, 0),
+  },
+}));
 
 // TODO: highlight highest card
 // TODO: show owner of card
@@ -107,40 +142,32 @@ class PandoerBoard extends React.Component {
       }
     }
 
-    function getAction(that) {
+    function getActionText(that) {
       if (that.props.ctx.phase === 'countPoints') {
-        return <h1>Allemaal accepteren om opnieuw te delen</h1>
+        return "Allemaal accepteren om opnieuw te delen"
       }
 
       if (that.props.ctx.currentPlayer === that.getId()) {
         if (that.props.ctx.phase === 'shouts') {
-          return <div>
-            <h1>Uw beurt, roepen of passen</h1>
-          </div>
+          return "Uw beurt, roepen of passen"
         } else if (shouldAnnounce(that.props.G, that.props.ctx, that.props.ctx.currentPlayer)) {
-          return <div>
-            <h1>Uw beurt, kies kaarten om te tonen en toon</h1>
-          </div>
+          return "Uw beurt, kies kaarten om te tonen en toon"
         } else {
-          return <div>
-            <h1>Uw beurt, speel een kaart</h1>
-          </div>
+          return "Uw beurt, speel een kaart"
         }
       } else {
         if (that.props.ctx.phase === 'shouts') {
-          return <div>
-            <h1>{that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om te roepen of te passen</h1>
-          </div>
+          return `${that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om te roepen of te passen`
         } else if(shouldAnnounce(that.props.G, that.props.ctx, that.props.ctx.currentPlayer)) {
-          return <div>
-            <h1>{that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om te tonen</h1>
-          </div>
+          return `${that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om te tonen`
         } else {
-          return <div>
-            <h1>{that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om een kaart te spelen</h1>
-          </div>
+          return `${that.props.G.playersKnownInfo[that.props.ctx.currentPlayer].name} is aan de beurt om een kaart te spelen`
         }
       }
+    }
+
+    function getAction(that) {
+      return <h1>{getActionText(that)}</h1>
     }
 
     function getAnnouncementForm(that) {
@@ -291,14 +318,10 @@ class PandoerBoard extends React.Component {
 
     function getLastTrick(that) {
       if (that.props.G.table.length === 0) {
-        return <div>
+        return <h2>
           Vorige slag:
-          <div style={handStyle}>
-            <Hand hide={false} layout={that.state.layout} cards={cardsToCid(that.props.G.lastTrick)}
-                  cardSize={that.getCardSize(cardsToCid(that.props.G.lastTrick))} onClick={() => {
-            }}/>
-          </div>
-        </div>
+          <PlayingHand cards={cardsToCid(that.props.G.lastTrick)}/>
+        </h2>
       }
     }
 
@@ -341,10 +364,6 @@ class PandoerBoard extends React.Component {
 
           {getNumberOfTricks(that)}
 
-          Tafel:
-          <div style={handStyle}>
-            <Hand hide={false} layout={that.state.layout} cards={cardsToCid(that.props.G.table)} cardSize={that.getCardSize(cardsToCid(that.props.G.table))} onClick={()=>{}}/>
-          </div>
           Hand:
           <div style={handStyle}>
             <Hand hide={false} layout={that.state.layout} cards={cardsToCid(that.props.G.players[that.getId()].hand)} onClick={that.play} cardSize={that.getCardSize(cardsToCid(that.props.G.players[that.getId()].hand))}/>{showLastPlayedCard(this, that.props.G.players[that.getId()].lastPlayedCard)}
@@ -353,10 +372,6 @@ class PandoerBoard extends React.Component {
           <div>
             Uw laatst gespeelde kaart: {showLastPlayedCard(that, that.props.G.playersKnownInfo[that.getId()].lastPlayedCard)}
             {getAnnouncement(that)}
-
-            <div>
-              {getLastTrick(that)}
-            </div>
             <br/>
             <button onClick={that.resign}>Opgeven</button><br/><br/>
 
@@ -368,17 +383,31 @@ class PandoerBoard extends React.Component {
 
     return (
         <div>
-          <div>
-            <CardTable test={"x"}/>
-          </div>
+          <Grid container container spacing={3} style={{'maxWidth': '1600px'}}>
+            <Grid item xs={1}>
+              <Paper className={classes.paper} style={{textAlign: 'center'}}>
+                <h2>Boom</h2>
+                <h3>Team 1: {this.props.G.scoreBoard[0]}</h3>
+                <h3>Team 2: {this.props.G.scoreBoard[1]}</h3>
+              </Paper>
+            </Grid>
+            <Grid item xs={8}>
+              <div>
+                <CardTable G={this.props.G} ctx={this.props.ctx} myPlayerId={this.getId()} action={getActionText(this)}/>
+              </div>
+            </Grid>
+            <Grid item xs={3}>
+              <Paper className={classes.paper} style={{textAlign: 'center'}}>
+                <h1>Troef: {suitInDutch(this.props.G.trump)}</h1>
+                {getLastTrick(this)}
+              </Paper>
+            </Grid>
+          </Grid>
 
           {/*<SpacingGrid/>*/}
 
           PHASE: {this.props.ctx.phase}
-          {getAction(this)}
-          Boom:<br/>
-          Team 1: {this.props.G.scoreBoard[0]}<br/>
-          Team 2: {this.props.G.scoreBoard[1]}<br/><br/>
+
           Fase: { this.props.ctx.phase === 'shouts' ? 'roepen' : (this.props.ctx.phase === 'play' ? 'spelen' : 'punten tellen')}<br/>
 
           {getMain(this)}
