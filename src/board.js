@@ -1,4 +1,5 @@
 import React from 'react';
+import { CardTable } from './table'
 import { cidToCard, cardToCid, cardsToCid, suitInDutch } from './cardUtils';
 import {
   shouldAnnounce,
@@ -12,7 +13,9 @@ import {
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 
-class PandoerTable extends React.Component {
+// TODO: highlight highest card
+// TODO: show owner of card
+class PandoerBoard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -365,6 +368,12 @@ class PandoerTable extends React.Component {
 
     return (
         <div>
+          <div>
+            <CardTable test={"x"}/>
+          </div>
+
+          {/*<SpacingGrid/>*/}
+
           PHASE: {this.props.ctx.phase}
           {getAction(this)}
           Boom:<br/>
@@ -378,4 +387,4 @@ class PandoerTable extends React.Component {
   }
 }
 
-export { PandoerTable }
+export { PandoerBoard }

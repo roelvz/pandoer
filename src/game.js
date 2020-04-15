@@ -4,7 +4,11 @@ import { startScore, resetTheGame,  shouldAnnounce, isLegalPlay, getAnnouncement
 import { initDeck, dealCards, containsCard, removeCard, areCardsEqual, sortCards } from "./cardUtils";
 
 // TODO: show win/lose on end of game
-// TODO: pandoer op tafel: end if higher card is played
+// TODO: restart at end of game
+// TODO: pandoer (op tafel): end if higher card is played
+// TODO: preselect
+// TODO: resign on other player's turn
+// TODO: accept resign
 
 function createPandoerGame(playerView) {
   return {
