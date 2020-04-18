@@ -20,7 +20,7 @@ const PandoerClient = Client({
   game: createPandoerGame(PlayerView.STRIP_SECRETS),
   board: PandoerBoard,
   numPlayers: 4,
-  multiplayer: SocketIO({server: 'localhost:8000' }),
+  multiplayer: SocketIO({server: 'https://pandoer-server.herokuapp.com/' }),
   debug: false,
 });
 
