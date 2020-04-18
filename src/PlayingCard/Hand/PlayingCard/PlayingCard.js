@@ -18,7 +18,7 @@ class PlayingCard extends Component {
       elevated: props.elevated,
       style: this.props.style,
       position: {x : 0, y : 0},
-      draggableDivStyle: {"zIndex":this.props.zIndex}
+      draggableDivStyle: {"zIndex":this.props.zIndex, "display": "inline-block"}
     }
 
   }
@@ -53,7 +53,7 @@ class PlayingCard extends Component {
         // console.log('position: ', )
     }
     onDragStart(e) {
-        this.state.draggableDivStyle = {"zIndex":"999", "position" : "fixed"}
+        this.state.draggableDivStyle = {"zIndex":"999", "position" : "fixed", "display": "inline-block"}
 
         e.preventDefault(); //fixes desktop drag image issue
 
@@ -85,7 +85,7 @@ class PlayingCard extends Component {
         //         {}
         // }, 100)
         // this.state.draggableDivStyle = {"transitionDuration": "1s"}
-        this.state.draggableDivStyle = {"zIndex":this.props.zIndex, "position" : "fixed"}
+        this.state.draggableDivStyle = {"zIndex":this.props.zIndex, "position" : "fixed", "display": "inline-block"}
 
         this.props.onDragStop(this.state.card);
 

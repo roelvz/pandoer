@@ -1,0 +1,211 @@
+import React from 'react';
+import { makeStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import { PlayingHand } from "./playingHand";
+import {cardsToCid, cardToCid, cidToCard} from './cardUtils';
+import { Mat } from "./mat";
+
+import {
+  canShout,
+  shouldAnnounce,
+  shouldShout,
+  someoneShoutedPandoer,
+  someoneShoutedPandoerOnTable
+} from "./pandoerRules";
+
+const useStyles = makeStyles((theme) => ({
+  container: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(12, 1fr)',
+    gridGap: theme.spacing(3),
+  },
+  paper: {
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+    whiteSpace: 'nowrap',
+    marginBottom: theme.spacing(1),
+  },
+  playingCard: {
+    float: 'left',
+    minWidth: '75px',
+  },
+  verticalHand: {
+    padding: theme.spacing(1),
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '424px',
+  },
+  divider: {
+    margin: theme.spacing(2, 0),
+  },
+}));
+
+function getPlayers(props) {
+  let result = [];
+  let playerId = props.myPlayerId;
+  for (let i = 0; i < 4; i++) {
+    result.push(props.G.playersKnownInfo[playerId]);
+    playerId++;
+    playerId %= 4;
+  }
+  return result;
+}
+
+function getTableCards(props) {
+  let playerId = props.myPlayerId;
+  let result = {
+    leftCard: undefined,
+    rightCard: undefined,
+    bottomCard: undefined,
+    topCard: undefined,
+  }
+
+  if (props.G.playersKnownInfo[playerId].hasPlayedCard) {
+    result.bottomCard = cardToCid(props.G.playersKnownInfo[playerId].lastPlayedCard);
+  }
+  playerId++;
+  playerId %= 4;
+
+  if (props.G.playersKnownInfo[playerId].hasPlayedCard) {
+    result.leftCard = cardToCid(props.G.playersKnownInfo[playerId].lastPlayedCard);
+  }
+  playerId++;
+  playerId %= 4;
+
+  if (props.G.playersKnownInfo[playerId].hasPlayedCard) {
+    result.topCard = cardToCid(props.G.playersKnownInfo[playerId].lastPlayedCard);
+  }
+  playerId++;
+  playerId %= 4;
+
+  if (props.G.playersKnownInfo[playerId].hasPlayedCard) {
+    result.rightCard = cardToCid(props.G.playersKnownInfo[playerId].lastPlayedCard);
+  }
+
+  return result;
+};
+
+function CardTable(props) {
+  let shoutValue = 0
+
+  const [spacing, setSpacing] = React.useState(2);
+  const classes = useStyles();
+
+  const handleChange = (event) => {
+    setSpacing(Number(event.target.value));
+  }
+
+  function play(key) {
+    console.log('clicked on card in hand: ' + key);
+    console.log(props);
+    if (shouldAnnounce(props.G, props.ctx, props.ctx.currentPlayer)) {
+      props.moves.addCardToAnnouncement(cidToCard(key));
+    } else {
+      props.moves.playCard(cidToCard(key));
+    }
+  }
+
+  function shout() {
+    props.moves.shout(shoutValue);
+  }
+
+  function pass() {
+    props.moves.pass();
+  }
+
+  function pandoer() {
+    props.moves.pandoer();
+  }
+
+  function pandoerOnTable() {
+    props.moves.pandoerOnTable();
+  }
+
+  function getPlayerStyle(playerId, props) {
+    if (playerId.toString() === props.ctx.currentPlayer) {
+      return {
+        color: 'blue',
+        fontWeight: 700,
+      }
+    }
+  }
+
+  function getPlayerShoutString(player) {
+    let str = '';
+    if (player.shoutedPandoerOnTable) {
+      str = 'Pandoer op tafel!'
+    } else if (player.shoutedPandoer) {
+      str = 'Pandoer!'
+    } else  {
+      str = player.shout || (player.passed ? 'pas' : 'niet geroepen')
+    }
+
+    return <div>Roep: {str}</div>
+  }
+
+  function handleShoutChange(event) {
+    shoutValue = parseInt(event.target.value)
+    // this.setState({shoutValue: parseInt(event.target.value)});
+  }
+
+  function getAnnouncementForm(props) {
+    if (shouldShout(props.G, props.ctx, props.myPlayerId)) {
+      return <div>
+        <TextField onChange={handleShoutChange}/>
+        <Button variant="contained" disabled={!canShout(props.G, props.ctx, shoutValue)} onClick={shout}>Roepen</Button>
+        <Button variant="contained" onClick={pass}>Pas</Button>
+        <Button variant="contained" disabled={someoneShoutedPandoer(props.G)} onClick={pandoer}>Pandoer kletsen</Button>
+        <Button variant="contained" disabled={someoneShoutedPandoerOnTable(props.G)} onClick={pandoerOnTable}>Pandoer op tafel</Button>
+      </div>
+    }
+  }
+
+  return (
+      <Grid container spacing={3} >
+        <Grid item xs={2}/>
+        <Grid item xs={8} style={{textAlign: 'center'}}>
+          <Paper className={classes.paper}>
+            <div style={getPlayerStyle(2, props)}>
+              <div>{getPlayers(props)[2].name}</div>
+              {getPlayerShoutString(props.G.playersKnownInfo[2])}
+            </div>
+          </Paper>
+        </Grid>
+        <Grid item xs={2}/>
+        <Grid item xs={2} style={{textAlign: 'center'}}>
+          <Paper className={classes.verticalHand}>
+            <div style={getPlayerStyle(1, props)}>
+              <div>{getPlayers(props)[1].name}</div>
+              {getPlayerShoutString(props.G.playersKnownInfo[1])}
+            </div>
+          </Paper>
+        </Grid>
+        <Grid item xs={8}>
+          <Mat cards={getTableCards(props)}/>
+        </Grid>
+        <Grid item xs={2} style={{textAlign: 'center'}}>
+          <Paper className={classes.verticalHand}>
+            <div style={getPlayerStyle(3, props)}>
+              <div>{getPlayers(props)[3].name}</div>
+              {getPlayerShoutString(props.G.playersKnownInfo[3])}
+            </div>
+          </Paper>
+        </Grid>
+        <Grid item xs={1}/>
+        <Grid item xs={10} style={{textAlign: 'center'}}>
+          <Paper className={classes.paper}>
+            <h1>{props.action}</h1>
+            <PlayingHand cards={cardsToCid(props.G.players[props.myPlayerId].hand)} onClick={play}/>
+          </Paper>
+        </Grid>
+        <Grid item xs={1}/>
+      </Grid>
+  );
+}
+
+export { CardTable }

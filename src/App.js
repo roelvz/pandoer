@@ -4,25 +4,24 @@ import React from 'react';
 import { render } from "react-dom";
 import { Client } from 'boardgame.io/react';
 import { SocketIO } from 'boardgame.io/multiplayer'
-import { Pandoer } from './game';
+import { createPandoerGame } from './game';
 import { PlayerView } from 'boardgame.io/core';
 import { PandoerTable } from './board';
 import { TestPandoerTable } from './testBoard';
 
 // const App = Client({
-//   game: Pandoer,
+//   game: createPandoerGame(),
 //   board: TestPandoerTable,
 //   numPlayers: 4,
 //   debug: false,
 // });
 
 const PandoerClient = Client({
-  game: Pandoer,
+  game: createPandoerGame(PlayerView.STRIP_SECRETS),
   board: PandoerTable,
   numPlayers: 4,
-  multiplayer: SocketIO({server: 'https://pandoer-server.herokuapp.com/' }),
+  multiplayer: SocketIO({server: 'localhost:8000' }),
   debug: false,
-  playerView: PlayerView.STRIP_SECRETS,
 });
 
 class App extends React.Component {
@@ -42,7 +41,6 @@ class App extends React.Component {
     }
     return (
         <div>
-          {/*Player ID: {this.state.playerID}*/}
           <PandoerClient playerID={this.state.playerID} />
         </div>
     );

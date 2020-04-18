@@ -1,6 +1,6 @@
 import React from 'react';
 import { cardToString, cidToCard, cardToCid, cardsToCid } from './cardUtils';
-import { shouldAnnounce, isLegalPlay } from './game';
+import { shouldAnnounce, isLegalPlay } from './pandoerRules';
 import Hand from "./PlayingCard/Hand/Hand";
 import PlayingCard from "./PlayingCard/Hand/PlayingCard/PlayingCard";
 
@@ -18,7 +18,10 @@ class TestPandoerTable extends React.Component {
     this.simulate = this.simulate.bind(this);
     this.shout = this.shout.bind(this);
     this.pass = this.pass.bind(this);
-    this.acceptResult = this.acceptResult.bind(this);
+    this.acceptResult1 = this.acceptResult1.bind(this);
+    this.acceptResult2 = this.acceptResult2.bind(this);
+    this.acceptResult3 = this.acceptResult3.bind(this);
+    this.acceptResult4 = this.acceptResult4.bind(this);
   }
 
   getCardSize(cards) {
@@ -38,9 +41,10 @@ class TestPandoerTable extends React.Component {
     this.props.moves.pass();
   }
 
-  acceptResult(event) {
-    this.props.moves.acceptResult();
-  }
+  acceptResult1() { this.props.moves.acceptResult(0); }
+  acceptResult2() { this.props.moves.acceptResult(1); }
+  acceptResult3() { this.props.moves.acceptResult(2); }
+  acceptResult4() { this.props.moves.acceptResult(3); }
 
   play(key) {
     console.log('clicked on card in hand: ' + key);
@@ -56,7 +60,7 @@ class TestPandoerTable extends React.Component {
   }
 
   simulate() {
-    if (this.props.G.players[this.props.ctx.currentPlayer].hand.length === 1) {
+    if (Object.keys(this.props.G.players).filter(key => this.props.G.players[key].hand.length === 0).length === 3) {
       return;
     }
 
@@ -68,6 +72,9 @@ class TestPandoerTable extends React.Component {
       }
     } else {
       if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
+        for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
+          this.props.moves.addCardToAnnouncement(card);
+        }
         this.props.moves.announce();
       } else {
         for (const card of this.props.G.players[this.props.ctx.currentPlayer].hand) {
@@ -98,31 +105,44 @@ class TestPandoerTable extends React.Component {
 
     function getCountPhaseInfo(that) {
       if (that.props.ctx.phase === 'countPoints') {
-        let extraInfo1 = '';
-        let extraInfo2 = '';
-        if (that.props.G.attackingTeam === 0) {
-          extraInfo1 = ' waarvan ' + (that.props.G.playersKnownInfo['0'].announcementScore + that.props.G.playersKnownInfo['2'].announcementScore) + ' toon';
-        } else {
-          extraInfo2 = ' waarvan ' + (that.props.G.playersKnownInfo['1'].announcementScore + that.props.G.playersKnownInfo['3'].announcementScore) + ' toon';
-        }
+        let info1;
+        let info2;
 
         let winner;
-        if (that.props.G.roundScore[0] > that.props.G.roundScore[1]) {
-          winner = <h1>Team 1 is gewonnen</h1>
+        if (that.props.G.attackingTeam === 0) {
+          let shoutScore = that.props.G.playersKnownInfo[0].passed ? 0 : that.props.G.playersKnownInfo[0].shout;
+          shoutScore += that.props.G.playersKnownInfo[2].passed ? 0 : that.props.G.playersKnownInfo[2].shout;
+          let announcementScore = that.props.G.playersKnownInfo[0].announcementScore + that.props.G.playersKnownInfo[2].announcementScore;
+          info1 = 'Team 1 heeft ' + shoutScore + ' geroepen, heeft ' + announcementScore + ' getoond en haalde ' + (that.props.G.roundScore[0] - announcementScore) + ' punten';
+          info2 = 'Team 2 haalde ' + that.props.G.roundScore[1] + ' punten';
+          if (that.props.G.roundScore[0] >= shoutScore) {
+            winner = <h1>Team 1 is gewonnen</h1>
+          } else {
+            winner = <h1>Team 2 is gewonnen</h1>
+          }
         } else {
-          winner = <h1>Team 2 is gewonnen</h1>
+          let shoutScore = that.props.G.playersKnownInfo[1].passed ? 0 : that.props.G.playersKnownInfo[1].shout;
+          shoutScore += that.props.G.playersKnownInfo[3].passed ? 0 : that.props.G.playersKnownInfo[3].shout;
+          let announcementScore = that.props.G.playersKnownInfo[1].announcementScore + that.props.G.playersKnownInfo[3].announcementScore;
+          info1 = 'Team 1 haalde ' + that.props.G.roundScore[0] + ' punten';
+          info2 = 'Team 2 heeft ' + shoutScore + ' geroepen, heeft ' + announcementScore + ' getoond en haalde ' + (that.props.G.roundScore[1] - announcementScore) + ' punten';
+          if (that.props.G.roundScore[0] >= shoutScore) {
+            winner = <h1>Team 2 is gewonnen</h1>
+          } else {
+            winner = <h1>Team 1 is gewonnen</h1>
+          }
         }
 
         return <div>
           {winner}
-          Team 1 heeft {that.props.G.roundScore[0]} punten{extraInfo1}:
+          {info1}:
           <div style={handStyle}>
             <Hand hide={false} layout={"fan"}
                   cards={cardsToCid(that.props.G.tricks[0].flat())}
                   cardSize={that.getCardSize(cardsToCid(that.props.G.tricks[0].flat()))}
                   onClick={() => {}}></Hand>
           </div>
-          Team 2 heeft {that.props.G.roundScore[1]} punten{extraInfo2}:
+          {info2}
           <div style={handStyle}>
             <Hand hide={false} layout={"fan"}
                   cards={cardsToCid(that.props.G.tricks[1].flat())}
@@ -130,7 +150,10 @@ class TestPandoerTable extends React.Component {
                   onClick={() => {}}></Hand>
           </div>
           <div>
-            <button onClick={that.acceptResult}>Ok, verder spelen</button>
+            <button onClick={that.acceptResult1}>Accept player 1</button>
+            <button onClick={that.acceptResult2}>Accept player 2</button>
+            <button onClick={that.acceptResult3}>Accept player 3</button>
+            <button onClick={that.acceptResult4}>Accept player 4</button>
           </div>
           <div>
             {that.props.G.playersKnownInfo[0].name}: {that.props.G.playersKnownInfo[0].hasAcceptedResult ? 'geaccepteerd' : 'moet nog accepteren'}<br/>
