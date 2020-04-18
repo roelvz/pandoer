@@ -6,7 +6,7 @@ import { Client } from 'boardgame.io/react';
 import { SocketIO } from 'boardgame.io/multiplayer'
 import { createPandoerGame } from './game';
 import { PlayerView } from 'boardgame.io/core';
-import { PandoerTable } from './board';
+import { PandoerBoard } from './board';
 import { TestPandoerTable } from './testBoard';
 
 // const App = Client({
@@ -18,7 +18,7 @@ import { TestPandoerTable } from './testBoard';
 
 const PandoerClient = Client({
   game: createPandoerGame(PlayerView.STRIP_SECRETS),
-  board: PandoerTable,
+  board: PandoerBoard,
   numPlayers: 4,
   multiplayer: SocketIO({server: 'localhost:8000' }),
   debug: false,
