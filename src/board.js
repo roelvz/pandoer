@@ -59,12 +59,12 @@ class PandoerBoard extends React.Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
-    this.play = this.play.bind(this);
+    // this.play = this.play.bind(this);
     this.removeCard = this.removeCard.bind(this);
-    this.shout = this.shout.bind(this);
-    this.pass = this.pass.bind(this);
-    this.pandoer = this.pandoer.bind(this);
-    this.pandoerOnTable = this.pandoerOnTable.bind(this);
+    // this.shout = this.shout.bind(this);
+    // this.pass = this.pass.bind(this);
+    // this.pandoer = this.pandoer.bind(this);
+    // this.pandoerOnTable = this.pandoerOnTable.bind(this);
     this.getId = this.getId.bind(this);
     this.announce = this.announce.bind(this);
     this.acceptResult = this.acceptResult.bind(this);
@@ -81,23 +81,7 @@ class PandoerBoard extends React.Component {
     this.setState({shoutValue: parseInt(event.target.value)});
   }
 
-  shout(event) {
-    this.props.moves.shout(this.state.shoutValue);
-  }
-
-  pass(event) {
-    this.props.moves.pass();
-  }
-
-  pandoer(event) {
-    this.props.moves.pandoer();
-  }
-
-  pandoerOnTable(event) {
-    this.props.moves.pandoerOnTable();
-  }
-
-  announce() {
+    announce() {
     this.props.moves.announce();
   }
 
@@ -111,15 +95,6 @@ class PandoerBoard extends React.Component {
 
   resetGame() {
     this.props.moves.resetGame();
-  }
-
-  play(key) {
-    console.log('clicked on card in hand: ' + key);
-    if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
-      this.props.moves.addCardToAnnouncement(cidToCard(key));
-    } else {
-      this.props.moves.playCard(cidToCard(key));
-    }
   }
 
   removeCard(key) {
@@ -325,27 +300,11 @@ class PandoerBoard extends React.Component {
       }
     }
 
-    function getPlayerShoutString(player) {
-      let str = '';
-      if (player.shoutedPandoerOnTable) {
-        str = 'Pandoer op tafel!'
-      } else if (player.shoutedPandoer) {
-        str = 'Pandoer!'
-      } else  {
-        str = player.shout || (player.passed ? 'pas' : 'niet geroepen')
-      }
-
-      return <div>
-        {player.name}: {str}<br/>
-      </div>
-    }
-
     function getNumberOfTricks(that) {
       if (!someoneShoutedPandoer(that.props.G) && !someoneShoutedPandoerOnTable(that.props.G)) {
         return <div>
           Team 1: Aantal slagen: {that.props.G.tricks[0].length} {that.props.G.attackingTeam === undefined ? '' : (that.props.G.attackingTeam === 0 ? '(de goei)' : '(de slechte)')}<br/>
           Team 2: Aantal slagen: {that.props.G.tricks[1].length} {that.props.G.attackingTeam === undefined ? '' : (that.props.G.attackingTeam === 1 ? '(de goei)' : '(de slechte)')}<br/><br/>
-          Troef: {suitInDutch(that.props.G.trump)}<br/><br/>
         </div>
       }
     }
@@ -356,19 +315,10 @@ class PandoerBoard extends React.Component {
       } else {
         return <div>Speler aan beurt: {that.props.G.playersKnownInfo[that.props.ctx.currentPlayer.toString()].name}<br/><br/>
           {getAnnouncementForm(that)}
-          Geroepen:<br/>
-          {getPlayerShoutString(that.props.G.playersKnownInfo[0])}
-          {getPlayerShoutString(that.props.G.playersKnownInfo[1])}
-          {getPlayerShoutString(that.props.G.playersKnownInfo[2])}
-          {getPlayerShoutString(that.props.G.playersKnownInfo[3])}<br/>
+          Geroepen:<br/><br/>
 
           {getNumberOfTricks(that)}
 
-          Hand:
-          <div style={handStyle}>
-            <Hand hide={false} layout={that.state.layout} cards={cardsToCid(that.props.G.players[that.getId()].hand)} onClick={that.play} cardSize={that.getCardSize(cardsToCid(that.props.G.players[that.getId()].hand))}/>{showLastPlayedCard(this, that.props.G.players[that.getId()].lastPlayedCard)}
-          </div>
-          <br/>
           <div>
             Uw laatst gespeelde kaart: {showLastPlayedCard(that, that.props.G.playersKnownInfo[that.getId()].lastPlayedCard)}
             {getAnnouncement(that)}
@@ -383,7 +333,7 @@ class PandoerBoard extends React.Component {
 
     return (
         <div>
-          <Grid container container spacing={3} style={{'maxWidth': '1600px'}}>
+          <Grid container container spacing={3} style={{'maxWidth': '1900px'}}>
             <Grid item xs={1}>
               <Paper className={classes.paper} style={{textAlign: 'center'}}>
                 <h2>Boom</h2>
@@ -393,7 +343,12 @@ class PandoerBoard extends React.Component {
             </Grid>
             <Grid item xs={8}>
               <div>
-                <CardTable G={this.props.G} ctx={this.props.ctx} myPlayerId={this.getId()} action={getActionText(this)}/>
+                <CardTable G={this.props.G}
+                           ctx={this.props.ctx}
+                           moves={this.props.moves}
+                           myPlayerId={this.getId()}
+                           action={getActionText(this)}
+                           shoutValue={this.state.shoutValue}/>
               </div>
             </Grid>
             <Grid item xs={3}>
@@ -403,10 +358,6 @@ class PandoerBoard extends React.Component {
               </Paper>
             </Grid>
           </Grid>
-
-          {/*<SpacingGrid/>*/}
-
-          PHASE: {this.props.ctx.phase}
 
           Fase: { this.props.ctx.phase === 'shouts' ? 'roepen' : (this.props.ctx.phase === 'play' ? 'spelen' : 'punten tellen')}<br/>
 

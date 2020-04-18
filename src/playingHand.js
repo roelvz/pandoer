@@ -19,7 +19,7 @@ class PlayingHand extends Component {
           {
           this.props.cards.map((card) => {
             return <div key={Uuid.create()} style={{float: 'left', minWidth: '75px'}}>
-              <PlayingCard card={card} height={100} onClick={()=>{}}/>
+              <PlayingCard card={card} height={100} onClick={this.props.onClick ? this.props.onClick.bind(this) : ()=>{}}/>
             </div>
           })
           }

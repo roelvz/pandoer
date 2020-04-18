@@ -31,6 +31,7 @@ function someoneShoutedPandoerOnTable(G) {
 }
 
 function canShout(G, ctx, value) {
+  console.log('CAN SHOUT ' + value)
   return isLegalShoutValue(value) &&
       !someoneShoutedPandoer(G) && !someoneShoutedPandoerOnTable(G) &&
       shouldShout(G, ctx, ctx.currentPlayer) &&
@@ -258,7 +259,6 @@ function getPlayerId(G, ctx) {
 }
 
 function getTeamMatePlayerId(playerId) {
-  console.log(playerId);
   let result = undefined;
   switch (parseInt(playerId)) {
     case 0: result = 2; break;
@@ -267,7 +267,6 @@ function getTeamMatePlayerId(playerId) {
     case 3: result = 1; break;
     default: break;
   }
-  console.log('RESULT: ' + result);
   return result;
 }
 
