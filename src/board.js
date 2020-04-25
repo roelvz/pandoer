@@ -59,12 +59,12 @@ class PandoerBoard extends React.Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
-    // this.play = this.play.bind(this);
+    this.play = this.play.bind(this);
     this.removeCard = this.removeCard.bind(this);
-    // this.shout = this.shout.bind(this);
-    // this.pass = this.pass.bind(this);
-    // this.pandoer = this.pandoer.bind(this);
-    // this.pandoerOnTable = this.pandoerOnTable.bind(this);
+    this.shout = this.shout.bind(this);
+    this.pass = this.pass.bind(this);
+    this.pandoer = this.pandoer.bind(this);
+    this.pandoerOnTable = this.pandoerOnTable.bind(this);
     this.getId = this.getId.bind(this);
     this.announce = this.announce.bind(this);
     this.acceptResult = this.acceptResult.bind(this);
@@ -81,7 +81,24 @@ class PandoerBoard extends React.Component {
     this.setState({shoutValue: parseInt(event.target.value)});
   }
 
-    announce() {
+
+  shout(event) {
+    this.props.moves.shout(this.state.shoutValue);
+  }
+
+  pass(event) {
+    this.props.moves.pass();
+  }
+
+  pandoer(event) {
+    this.props.moves.pandoer();
+  }
+
+  pandoerOnTable(event) {
+    this.props.moves.pandoerOnTable();
+  }
+
+  announce() {
     this.props.moves.announce();
   }
 
@@ -95,6 +112,15 @@ class PandoerBoard extends React.Component {
 
   resetGame() {
     this.props.moves.resetGame();
+  }
+
+  play(key) {
+    console.log('clicked on card in hand: ' + key);
+    if (shouldAnnounce(this.props.G, this.props.ctx, this.props.ctx.currentPlayer)) {
+      this.props.moves.addCardToAnnouncement(cidToCard(key));
+    } else {
+      this.props.moves.playCard(cidToCard(key));
+    }
   }
 
   removeCard(key) {
