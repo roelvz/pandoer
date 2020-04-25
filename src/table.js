@@ -174,8 +174,6 @@ function CardTable(props) {
       case '2': result = '0'; break;
       case '3': result = '1'; break;
     }
-    console.log(getPlayers(props))
-    console.log(props.myPlayerId + ': ' + result)
     return result
   }
 
@@ -208,7 +206,7 @@ function CardTable(props) {
           <Paper className={classes.paper}>
             <div style={getPlayerStyle(getUpperPlayer(props), props)}>
               <div>{(props.G.playersKnownInfo[getUpperPlayer(props).toString()]).name}</div>
-              {getPlayerShoutString(getPlayers(props)[getUpperPlayer(props)])}
+              {getPlayerShoutString(props.G.playersKnownInfo[getUpperPlayer(props)])}
             </div>
           </Paper>
         </Grid>
@@ -217,7 +215,7 @@ function CardTable(props) {
           <Paper className={classes.verticalHand}>
             <div style={getPlayerStyle(getLeftPlayer(props), props)}>
               <div>{props.G.playersKnownInfo[getLeftPlayer(props)].name}</div>
-              {getPlayerShoutString(getPlayers(props)[getLeftPlayer(props)])}
+              {getPlayerShoutString(props.G.playersKnownInfo[getLeftPlayer(props)])}
             </div>
           </Paper>
         </Grid>
@@ -228,7 +226,7 @@ function CardTable(props) {
           <Paper className={classes.verticalHand}>
             <div style={getPlayerStyle(getRightPlayer(props), props)}>
               <div>{props.G.playersKnownInfo[getRightPlayer(props)].name}</div>
-              {getPlayerShoutString(getPlayers(props)[getRightPlayer(props)])}
+              {getPlayerShoutString(props.G.playersKnownInfo[getRightPlayer(props)])}
             </div>
           </Paper>
         </Grid>
