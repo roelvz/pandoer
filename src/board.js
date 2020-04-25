@@ -258,8 +258,7 @@ class PandoerBoard extends React.Component {
         } else {
           let winner;
           if (that.props.G.attackingTeam === 0) {
-            let shoutScore = that.props.G.playersKnownInfo[0].passed ? 0 : that.props.G.playersKnownInfo[0].shout;
-            shoutScore += that.props.G.playersKnownInfo[2].passed ? 0 : that.props.G.playersKnownInfo[2].shout;
+            let shoutScore = that.props.G.playersKnownInfo[0].passed ? that.props.G.playersKnownInfo[2].shout : that.props.G.playersKnownInfo[0].shout;
             let announcementScore = that.props.G.playersKnownInfo[0].announcementScore + that.props.G.playersKnownInfo[2].announcementScore;
             info1 = 'Team 1 heeft ' + shoutScore + ' geroepen, heeft ' + announcementScore + ' getoond en haalde ' + (that.props.G.roundScore[0] - announcementScore) + ' punten';
             info2 = 'Team 2 haalde ' + that.props.G.roundScore[1] + ' punten';
@@ -269,8 +268,7 @@ class PandoerBoard extends React.Component {
               winner = <h1>Team 2 is gewonnen</h1>
             }
           } else {
-            let shoutScore = that.props.G.playersKnownInfo[1].passed ? 0 : that.props.G.playersKnownInfo[1].shout;
-            shoutScore += that.props.G.playersKnownInfo[3].passed ? 0 : that.props.G.playersKnownInfo[3].shout;
+            let shoutScore = that.props.G.playersKnownInfo[1].passed ? that.props.G.playersKnownInfo[3].passed : that.props.G.playersKnownInfo[1].shout;
             let announcementScore = that.props.G.playersKnownInfo[1].announcementScore + that.props.G.playersKnownInfo[3].announcementScore;
             info1 = 'Team 1 haalde ' + that.props.G.roundScore[0] + ' punten';
             info2 = 'Team 2 heeft ' + shoutScore + ' geroepen, heeft ' + announcementScore + ' getoond en haalde ' + (that.props.G.roundScore[1] - announcementScore) + ' punten';
