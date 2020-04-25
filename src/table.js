@@ -127,13 +127,13 @@ function CardTable(props) {
   }
 
   function getPlayerStyle(playerId, props) {
-    // console.log(playerId)
-    // if (playerId === props.ctx.currentPlayer) {
-    //   return {
-    //     color: 'blue',
-    //     fontWeight: 700,
-    //   }
-    // }
+    console.log(playerId)
+    if (playerId === props.ctx.currentPlayer) {
+      return {
+        color: 'blue',
+        fontWeight: 700,
+      }
+    }
   }
 
   function getPlayerShoutString(player) {
@@ -169,44 +169,23 @@ function CardTable(props) {
   function getUpperPlayer(props) {
     let result = 0;
     switch (props.myPlayerId) {
-      case '0': result = '3';
-      case '1': result = '0';
-      case '2': result = '1';
-      case '3': result = '2';
+      case '0': result = '2'; break;
+      case '1': result = '3'; break;
+      case '2': result = '0'; break;
+      case '3': result = '1'; break;
     }
-    console.log(result)
-    return result
-  }
-
-  function getUpperPlayerId(props) {
-    let result = 0;
-    switch (props.myPlayerId) {
-      case '0': result = '2';
-      case '1': result = '3';
-      case '2': result = '0';
-      case '3': result = '1';
-    }
+    console.log(getPlayers(props))
+    console.log(props.myPlayerId + ': ' + result)
     return result
   }
 
   function getLeftPlayer(props) {
     let result = 0;
     switch (props.myPlayerId) {
-      case '0': result =  '2';
-      case '1': result =  '3';
-      case '2': result =  '0';
-      case '3': result =  '1';
-    }
-    return result
-  }
-
-  function getLeftPlayerId(props) {
-    let result = 0;
-    switch (props.myPlayerId) {
-      case '0': result =  '1';
-      case '1': result =  '2';
-      case '2': result =  '3';
-      case '3': result =  '0';
+      case '0': result =  '1'; break;
+      case '1': result =  '2'; break;
+      case '2': result =  '3'; break;
+      case '3': result =  '0'; break;
     }
     return result
   }
@@ -214,21 +193,10 @@ function CardTable(props) {
   function getRightPlayer(props) {
     let result = 0;
     switch (props.myPlayerId) {
-      case '0': result = '0';
-      case '1': result = '1';
-      case '2': result = '2';
-      case '3': result = '3';
-    }
-    return result
-  }
-
-  function getRightPlayerId(props) {
-    let result = 0;
-    switch (props.myPlayerId) {
-      case '0': result = '3';
-      case '1': result = '2';
-      case '2': result = '1';
-      case '3': result = '0';
+      case '0': result = '3'; break;
+      case '1': result = '0'; break;
+      case '2': result = '1'; break;
+      case '3': result = '2'; break;
     }
     return result
   }
@@ -238,8 +206,8 @@ function CardTable(props) {
         <Grid item xs={2}/>
         <Grid item xs={8} style={{textAlign: 'center'}}>
           <Paper className={classes.paper}>
-            <div style={getPlayerStyle(getUpperPlayerId(props), props)}>
-              <div>{(getPlayers(props)[getUpperPlayer(props)]).name}</div>
+            <div style={getPlayerStyle(getUpperPlayer(props), props)}>
+              <div>{(props.G.playersKnownInfo[getUpperPlayer(props).toString()]).name}</div>
               {getPlayerShoutString(getPlayers(props)[getUpperPlayer(props)])}
             </div>
           </Paper>
@@ -247,8 +215,8 @@ function CardTable(props) {
         <Grid item xs={2}/>
         <Grid item xs={2} style={{textAlign: 'center'}}>
           <Paper className={classes.verticalHand}>
-            <div style={getPlayerStyle(getLeftPlayerId(props), props)}>
-              <div>{getPlayers(props)[getLeftPlayer(props)].name}</div>
+            <div style={getPlayerStyle(getLeftPlayer(props), props)}>
+              <div>{props.G.playersKnownInfo[getLeftPlayer(props)].name}</div>
               {getPlayerShoutString(getPlayers(props)[getLeftPlayer(props)])}
             </div>
           </Paper>
@@ -258,8 +226,8 @@ function CardTable(props) {
         </Grid>
         <Grid item xs={2} style={{textAlign: 'center'}}>
           <Paper className={classes.verticalHand}>
-            <div style={getPlayerStyle(getRightPlayerId(props), props)}>
-              <div>{getPlayers(props)[getRightPlayer(props)].name}</div>
+            <div style={getPlayerStyle(getRightPlayer(props), props)}>
+              <div>{props.G.playersKnownInfo[getRightPlayer(props)].name}</div>
               {getPlayerShoutString(getPlayers(props)[getRightPlayer(props)])}
             </div>
           </Paper>
