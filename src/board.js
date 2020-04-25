@@ -326,6 +326,21 @@ class PandoerBoard extends React.Component {
       }
     }
 
+    function getPlayerShoutString(player) {
+      let str = '';
+      if (player.shoutedPandoerOnTable) {
+        str = 'Pandoer op tafel!'
+      } else if (player.shoutedPandoer) {
+        str = 'Pandoer!'
+      } else  {
+        str = player.shout || (player.passed ? 'pas' : 'niet geroepen')
+      }
+
+      return <div>
+        {player.name}: {str}<br/>
+      </div>
+    }
+
     function getNumberOfTricks(that) {
       if (!someoneShoutedPandoer(that.props.G) && !someoneShoutedPandoerOnTable(that.props.G)) {
         return <div>
