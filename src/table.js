@@ -102,7 +102,6 @@ function CardTable(props) {
 
   function play(key) {
     console.log('clicked on card in hand: ' + key);
-    console.log(props);
     if (shouldAnnounce(props.G, props.ctx, props.ctx.currentPlayer)) {
       props.moves.addCardToAnnouncement(cidToCard(key));
     } else {
@@ -127,7 +126,6 @@ function CardTable(props) {
   }
 
   function getPlayerStyle(playerId, props) {
-    console.log(playerId)
     if (playerId === props.ctx.currentPlayer) {
       return {
         color: 'blue',

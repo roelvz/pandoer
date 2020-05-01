@@ -174,25 +174,26 @@ function createPandoerGame(playerView) {
         // default behaviour: round robin
         next: (G, ctx) => (ctx.playOrderPos + 1) % ctx.numPlayers,
         playOrder: (G, ctx) => {
+          let result = ctx.playOrder;
           if (ctx.turn > 0) {
             if (ctx.phase === 'shouts') {
-              return [G.dealer,
+              result = [G.dealer,
                 (G.dealer + 1) % ctx.numPlayers,
                 (G.dealer + 2) % ctx.numPlayers,
                 (G.dealer + 3) % ctx.numPlayers,];
-            } else if (G.highestShoutingPlayer !== undefined) {
-              return [G.highestShoutingPlayer,
-                ((parseInt(G.highestShoutingPlayer) + 1) % ctx.numPlayers).toString(),
-                ((parseInt(G.highestShoutingPlayer) + 2) % ctx.numPlayers).toString(),
-                ((parseInt(G.highestShoutingPlayer) + 3) % ctx.numPlayers).toString()];
             } else if (G.playerWhoWonPreviousTrick !== undefined) {
-              return [G.playerWhoWonPreviousTrick,
+              result = [G.playerWhoWonPreviousTrick,
                 ((parseInt(G.playerWhoWonPreviousTrick) + 1) % ctx.numPlayers).toString(),
                 ((parseInt(G.playerWhoWonPreviousTrick) + 2) % ctx.numPlayers).toString(),
                 ((parseInt(G.playerWhoWonPreviousTrick) + 3) % ctx.numPlayers).toString()];
+            } else if (G.highestShoutingPlayer !== undefined) {
+              result = [G.highestShoutingPlayer,
+                ((parseInt(G.highestShoutingPlayer) + 1) % ctx.numPlayers).toString(),
+                ((parseInt(G.highestShoutingPlayer) + 2) % ctx.numPlayers).toString(),
+                ((parseInt(G.highestShoutingPlayer) + 3) % ctx.numPlayers).toString()];
             }
           }
-          return ctx.playOrder;
+          return result;
         }
       },
     },
@@ -439,7 +440,10 @@ function createPandoerGame(playerView) {
               score = G.scoreBoard[G.pandoerLost ? otherTeam : G.attackingTeam];
             }
 
-            let attackingTeamWon = !G.pandoerLost && G.roundScore[G.attackingTeam] - G.roundShout > G.roundScore[otherTeam];
+            let announcementScore = G.attackingTeam === 0 ?
+                G.playersKnownInfo[0].announcementScore + G.playersKnownInfo[2].announcementScore :
+                G.playersKnownInfo[1].announcementScore + G.playersKnownInfo[3].announcementScore
+            let attackingTeamWon = !G.pandoerLost && G.roundScore[G.attackingTeam] + announcementScore - G.roundShout > G.roundScore[otherTeam];
 
             if (G.resigningPlayer !== undefined) {
               const resigningTeam = getPlayerTeam(G, G.resigningPlayer);

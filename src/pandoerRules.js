@@ -31,7 +31,6 @@ function someoneShoutedPandoerOnTable(G) {
 }
 
 function canShout(G, ctx, value) {
-  console.log('CAN SHOUT ' + value)
   return isLegalShoutValue(value) &&
       !someoneShoutedPandoer(G) && !someoneShoutedPandoerOnTable(G) &&
       shouldShout(G, ctx, ctx.currentPlayer) &&

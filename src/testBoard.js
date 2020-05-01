@@ -115,7 +115,7 @@ class TestPandoerTable extends React.Component {
           let announcementScore = that.props.G.playersKnownInfo[0].announcementScore + that.props.G.playersKnownInfo[2].announcementScore;
           info1 = 'Team 1 heeft ' + shoutScore + ' geroepen, heeft ' + announcementScore + ' getoond en haalde ' + (that.props.G.roundScore[0] - announcementScore) + ' punten';
           info2 = 'Team 2 haalde ' + that.props.G.roundScore[1] + ' punten';
-          if (that.props.G.roundScore[0] >= shoutScore) {
+          if (that.props.G.roundScore[0] >= shoutScore - announcementScore) {
             winner = <h1>Team 1 is gewonnen</h1>
           } else {
             winner = <h1>Team 2 is gewonnen</h1>
@@ -126,7 +126,7 @@ class TestPandoerTable extends React.Component {
           let announcementScore = that.props.G.playersKnownInfo[1].announcementScore + that.props.G.playersKnownInfo[3].announcementScore;
           info1 = 'Team 1 haalde ' + that.props.G.roundScore[0] + ' punten';
           info2 = 'Team 2 heeft ' + shoutScore + ' geroepen, heeft ' + announcementScore + ' getoond en haalde ' + (that.props.G.roundScore[1] - announcementScore) + ' punten';
-          if (that.props.G.roundScore[0] >= shoutScore) {
+          if (that.props.G.roundScore[1] >= shoutScore - announcementScore) {
             winner = <h1>Team 2 is gewonnen</h1>
           } else {
             winner = <h1>Team 1 is gewonnen</h1>
